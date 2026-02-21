@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" role="img" aria-label="Road construction background">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#dbeafe"/>
+      <stop offset="100%" stop-color="#e5e7eb"/>
+    </linearGradient>
+    <linearGradient id="road" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#4b5563"/>
+      <stop offset="100%" stop-color="#1f2937"/>
+    </linearGradient>
+    <linearGradient id="barrier" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fb923c"/>
+      <stop offset="100%" stop-color="#ea580c"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1600" height="900" fill="url(#sky)"/>
+
+  <polygon points="480,360 1120,360 1600,900 0,900" fill="url(#road)"/>
+
+  <g opacity="0.35" stroke="#f3f4f6" stroke-width="10" stroke-linecap="round">
+    <line x1="800" y1="420" x2="800" y2="860"/>
+    <line x1="620" y1="500" x2="620" y2="860"/>
+    <line x1="980" y1="500" x2="980" y2="860"/>
+  </g>
+
+  <g transform="translate(260 460)">
+    <rect x="0" y="0" width="240" height="40" rx="8" fill="url(#barrier)"/>
+    <rect x="22" y="10" width="28" height="20" fill="#fff" opacity="0.7"/>
+    <rect x="92" y="10" width="28" height="20" fill="#fff" opacity="0.7"/>
+    <rect x="162" y="10" width="28" height="20" fill="#fff" opacity="0.7"/>
+    <rect x="220" y="40" width="10" height="120" fill="#7c2d12"/>
+    <rect x="10" y="40" width="10" height="120" fill="#7c2d12"/>
+  </g>
+
+  <g transform="translate(1120 520)">
+    <polygon points="60,0 120,120 0,120" fill="#f97316"/>
+    <rect x="32" y="62" width="56" height="14" fill="#fff" opacity="0.85"/>
+    <rect x="40" y="120" width="40" height="90" fill="#7c2d12"/>
+  </g>
+
+  <g transform="translate(1020 420)">
+    <polygon points="50,0 100,98 0,98" fill="#fb923c"/>
+    <rect x="26" y="46" width="48" height="12" fill="#fff" opacity="0.85"/>
+    <rect x="32" y="98" width="36" height="80" fill="#7c2d12"/>
+  </g>
+
+  <circle cx="220" cy="170" r="58" fill="#fde047" opacity="0.45"/>
+</svg>
