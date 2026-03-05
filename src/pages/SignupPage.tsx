@@ -1,16 +1,71 @@
 import { useState } from "react";
 import type { FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { isUserAdmin } from "../services/adminAuthService";
+import { hasSupabaseConfig, supabase } from "../services/supabaseClient";
 
 export default function SignupPage() {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [creating, setCreating] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  function onSubmit(event: FormEvent<HTMLFormElement>) {
+  async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    navigate("/dashboard");
+    setMessage(null);
+    setError(null);
+
+    if (!hasSupabaseConfig || !supabase) {
+      setError("Supabase is not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your .env file.");
+      return;
+    }
+
+    setCreating(true);
+    try {
+      const { data, error: authError } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: fullName,
+          },
+        },
+      });
+
+      if (authError) {
+        setError(authError.message);
+        return;
+      }
+
+      if (data.session) {
+        const userId = data.user?.id;
+
+        if (!userId) {
+          await supabase.auth.signOut();
+          setMessage("Account created, but we could not validate admin access yet. Ask a super admin to add you to public.admins, then sign in.");
+          return;
+        }
+
+        const admin = await isUserAdmin(userId);
+        if (!admin) {
+          await supabase.auth.signOut();
+          setMessage(`Account created. Ask a super admin to add this user_id to public.admins: ${userId}`);
+          return;
+        }
+
+        navigate("/dashboard");
+        return;
+      }
+
+      setMessage("Account created. Verify your email if prompted, then ask a super admin to add your user_id to public.admins before logging in.");
+    } catch (signUpError) {
+      setError(signUpError instanceof Error ? signUpError.message : "Failed to create account.");
+    } finally {
+      setCreating(false);
+    }
   }
 
   return (
@@ -67,9 +122,13 @@ export default function SignupPage() {
           />
         </label>
 
-        <button type="submit" className="btn btn-primary" style={{ width: "100%" }}>
-          Create Account
+        <button type="submit" className="btn btn-primary" style={{ width: "100%" }} disabled={creating}>
+          {creating ? "Creating account..." : "Create Account"}
         </button>
+
+        {message && <div className="card card-pad">{message}</div>}
+
+        {error && <div className="card card-pad">{error}</div>}
 
         <div className="muted" style={{ textAlign: "center" }}>
           Already have an account? <Link to="/login">Login</Link>

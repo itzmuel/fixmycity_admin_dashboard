@@ -72,10 +72,11 @@ export default defineConfig([
 ])
 ```
 
-## Supabase Magic Link Login
+## Supabase Email/Password Login
 
 1. Copy `.env.example` to `.env`.
 2. Set `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` from your Supabase project.
-3. In Supabase dashboard, enable Email provider and Magic Link.
-4. Add your app URL (for local dev: `http://localhost:5173`) to Auth URL settings.
-5. Run the app and open `/login`, enter your email, and click **Send Magic Link**.
+3. In Supabase dashboard, enable the **Email** provider for authentication.
+4. Run the app and open `/signup` to create an admin account with email and password.
+5. Add the new user's `auth.users.id` to `public.admins` (admin allowlist).
+6. Open `/login` and sign in using that email and password.

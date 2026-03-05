@@ -1,17 +1,26 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { isUserAdmin } from "../services/adminAuthService";
 import { hasSupabaseConfig, supabase } from "../services/supabaseClient";
 
 export default function LoginPage() {
+  const location = useLocation();
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
-  const [sending, setSending] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
+  const [password, setPassword] = useState("");
+  const [signingIn, setSigningIn] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const state = location.state as { authError?: string } | null;
+    if (state?.authError) {
+      setError(state.authError);
+    }
+  }, [location.state]);
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setMessage(null);
     setError(null);
 
     if (!hasSupabaseConfig || !supabase) {
@@ -19,13 +28,11 @@ export default function LoginPage() {
       return;
     }
 
-    setSending(true);
+    setSigningIn(true);
     try {
-      const { error: authError } = await supabase.auth.signInWithOtp({
+      const { data, error: authError } = await supabase.auth.signInWithPassword({
         email,
-        options: {
-          emailRedirectTo: `${window.location.origin}/dashboard`,
-        },
+        password,
       });
 
       if (authError) {
@@ -33,9 +40,25 @@ export default function LoginPage() {
         return;
       }
 
-      setMessage("Magic link sent. Check your email and open the link to sign in.");
+      const userId = data.user?.id;
+      if (!userId) {
+        await supabase.auth.signOut();
+        setError("Sign-in succeeded but no user session was returned. Please try again.");
+        return;
+      }
+
+      const admin = await isUserAdmin(userId);
+      if (!admin) {
+        await supabase.auth.signOut();
+        setError("This account is not in the admin allowlist.");
+        return;
+      }
+
+      navigate("/dashboard");
+    } catch (signInError) {
+      setError(signInError instanceof Error ? signInError.message : "Failed to sign in.");
     } finally {
-      setSending(false);
+      setSigningIn(false);
     }
   }
 
@@ -52,7 +75,7 @@ export default function LoginPage() {
         <div>
           <div className="h1">Login</div>
           <div className="muted" style={{ marginTop: 6 }}>
-            Enter your email to receive a magic sign-in link.
+            Enter your email and password to sign in.
           </div>
         </div>
 
@@ -68,11 +91,22 @@ export default function LoginPage() {
           />
         </label>
 
-        <button type="submit" className="btn btn-primary" style={{ width: "100%" }} disabled={sending}>
-          {sending ? "Sending..." : "Send Magic Link"}
-        </button>
+        <label style={{ display: "grid", gap: 6, fontWeight: 700 }}>
+          Password
+          <input
+            className="input"
+            type="password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            placeholder="Your password"
+            minLength={8}
+            required
+          />
+        </label>
 
-        {message && <div className="card card-pad">{message}</div>}
+        <button type="submit" className="btn btn-primary" style={{ width: "100%" }} disabled={signingIn}>
+          {signingIn ? "Signing in..." : "Sign In"}
+        </button>
 
         {error && <div className="card card-pad">{error}</div>}
 

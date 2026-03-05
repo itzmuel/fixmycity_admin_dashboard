@@ -1,5 +1,6 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
 import AppShell from "./components/AppShell";
+import RequireAdminAuth from "./components/RequireAdminAuth";
 import DashboardPage from "./pages/DashboardPage";
 import IssueDetailPage from "./pages/IssueDetailPage";
 import LoginPage from "./pages/LoginPage";
@@ -10,9 +11,13 @@ export const router = createBrowserRouter([
   { path: "/signup", element: <SignupPage /> },
   {
     path: "/",
-    element: <AppShell />,
+    element: (
+      <RequireAdminAuth>
+        <AppShell />
+      </RequireAdminAuth>
+    ),
     children: [
-      { index: true, element: <Navigate to="/login" replace /> },
+      { index: true, element: <Navigate to="/dashboard" replace /> },
       { path: "/dashboard", element: <DashboardPage /> },
       { path: "/issues/:id", element: <IssueDetailPage /> },
     ],
