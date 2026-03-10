@@ -35,12 +35,17 @@ export default function IssueDetailsPage() {
   }, [issue]);
 
   const photoUrl = useMemo(() => {
+    const direct = issue?.photoUrl?.trim();
+    if (direct) return direct;
+
     const path = issue?.photoPath?.trim();
     if (!path) return null;
+
     if (path.startsWith("http://") || path.startsWith("https://") || path.startsWith("data:") || path.startsWith("blob:")) {
       return path;
     }
-    return path.startsWith("/") ? path : `/${path}`;
+
+    return null;
   }, [issue]);
 
   async function setStatus(next: IssueStatus) {

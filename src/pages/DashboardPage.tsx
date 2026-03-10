@@ -157,7 +157,7 @@ export default function DashboardPage() {
 
           <tbody>
             {filteredIssues.map((issue) => {
-              const photo = issue.photoUrl ?? issue.photoPath ?? null;
+              const photo = issue.photoUrl ?? null;
 
               return (
                 <tr

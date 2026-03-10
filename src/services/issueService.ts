@@ -1,6 +1,10 @@
 import type { Issue, IssueStatus } from "../models/issue";
 import { supabase } from "./supabaseClient";
 
+const DEFAULT_ISSUE_PHOTO_BUCKET = import.meta.env.VITE_ISSUE_PHOTO_BUCKET ?? "issue-photos";
+const LEGACY_ISSUE_PHOTO_BUCKET = "issue-photo";
+const STORAGE_PUBLIC_PREFIX = "storage/v1/object/public/";
+
 function getSupabaseOrThrow() {
   if (!supabase) {
     throw new Error("Supabase is not configured. Add VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your .env file.");
@@ -21,7 +25,80 @@ type SupabaseIssueRow = {
   photo_url: string | null;
 };
 
+type ResolvedIssuePhoto = {
+  photoPath?: string;
+  photoUrl?: string;
+};
+
+function isAbsoluteUrl(value: string): boolean {
+  return /^(https?:\/\/|data:|blob:)/i.test(value);
+}
+
+function parseStoragePublicPath(value: string): { bucket?: string; path?: string } {
+  const normalized = value.replace(/^\/+/, "");
+  if (!normalized.startsWith(STORAGE_PUBLIC_PREFIX)) return {};
+
+  const suffix = normalized.slice(STORAGE_PUBLIC_PREFIX.length);
+  const [bucket, ...pathParts] = suffix.split("/");
+  const path = pathParts.join("/");
+
+  if (!bucket || !path) return {};
+
+  return { bucket, path };
+}
+
+function parsePhotoReference(value: string): { bucket?: string; path?: string } {
+  const normalized = value.replace(/^\/+/, "");
+
+  const fromStoragePublicPath = parseStoragePublicPath(normalized);
+  if (fromStoragePublicPath.path) return fromStoragePublicPath;
+
+  for (const bucket of [DEFAULT_ISSUE_PHOTO_BUCKET, LEGACY_ISSUE_PHOTO_BUCKET]) {
+    const prefix = `${bucket}/`;
+    if (normalized.startsWith(prefix)) {
+      return {
+        bucket,
+        path: normalized.slice(prefix.length),
+      };
+    }
+  }
+
+  return { path: normalized };
+}
+
+function getPublicPhotoUrl(path: string, bucketHint?: string): string | undefined {
+  if (!path || !supabase) return undefined;
+
+  const bucket = bucketHint ?? DEFAULT_ISSUE_PHOTO_BUCKET;
+  const { data } = supabase.storage.from(bucket).getPublicUrl(path);
+  return data.publicUrl || undefined;
+}
+
+function resolveIssuePhoto(photo: string | null): ResolvedIssuePhoto {
+  if (!photo) return {};
+
+  const trimmed = photo.trim();
+  if (!trimmed) return {};
+
+  if (isAbsoluteUrl(trimmed)) {
+    return {
+      photoPath: trimmed,
+      photoUrl: trimmed,
+    };
+  }
+
+  const { bucket, path } = parsePhotoReference(trimmed);
+  if (!path) return {};
+
+  return {
+    photoPath: path,
+    photoUrl: getPublicPhotoUrl(path, bucket),
+  };
+}
+
 function mapRowToIssue(r: SupabaseIssueRow): Issue {
+  const resolvedPhoto = resolveIssuePhoto(r.photo_url);
+
   return {
     id: r.id,
     category: r.category,
@@ -31,7 +108,8 @@ function mapRowToIssue(r: SupabaseIssueRow): Issue {
     address: r.address ?? undefined,
     latitude: r.latitude ?? undefined,
     longitude: r.longitude ?? undefined,
-    photoPath: r.photo_url ?? undefined,
+    photoPath: resolvedPhoto.photoPath,
+    photoUrl: resolvedPhoto.photoUrl,
   };
 }
 
