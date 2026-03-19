@@ -1,4 +1,5 @@
 import type { Issue, IssueStatus } from "../models/issue";
+import { ensureAdminSession } from "./adminAuthService";
 import { supabase } from "./supabaseClient";
 
 const DEFAULT_ISSUE_PHOTO_BUCKET = import.meta.env.VITE_ISSUE_PHOTO_BUCKET ?? "issue-photos";
@@ -11,6 +12,36 @@ function getSupabaseOrThrow() {
   }
 
   return supabase;
+}
+
+function buildServiceError(action: string, cause: unknown): Error {
+  const rawMessage = cause instanceof Error ? cause.message : String(cause ?? "");
+  const message = rawMessage.toLowerCase();
+
+  if (
+    message.includes("failed to fetch") ||
+    message.includes("network") ||
+    message.includes("socket")
+  ) {
+    return new Error("Cannot reach Supabase. Check internet connection and API settings.");
+  }
+
+  if (
+    message.includes("allowlist") ||
+    message.includes("permission") ||
+    message.includes("not authorized") ||
+    message.includes("row-level security") ||
+    message.includes("rls") ||
+    message.includes("jwt")
+  ) {
+    return new Error("Admin access denied. Sign in with an allowlisted admin account.");
+  }
+
+  if (rawMessage.trim().length > 0) {
+    return new Error(rawMessage);
+  }
+
+  return new Error(`Failed to ${action}.`);
 }
 
 type SupabaseIssueRow = {
@@ -119,36 +150,48 @@ const ISSUE_SELECT =
 export async function getIssues(): Promise<Issue[]> {
   const client = getSupabaseOrThrow();
 
-  const { data, error } = await client
-    .from("issues")
-    .select("id, category, description, status, created_at, address, latitude, longitude, photo_url")
-    .order("created_at", { ascending: false });
+  try {
+    await ensureAdminSession();
 
-  if (error) {
-    console.error("Supabase getIssues error:", error);
-    throw new Error(error.message);
+    const { data, error } = await client
+      .from("issues")
+      .select(ISSUE_SELECT)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Supabase getIssues error:", error);
+      throw new Error(error.message);
+    }
+
+    return (data ?? []).map((r) => mapRowToIssue(r as SupabaseIssueRow));
+  } catch (error) {
+    throw buildServiceError("load issues", error);
   }
-
-  return (data ?? []).map((r) => mapRowToIssue(r as SupabaseIssueRow));
 }
 
 export async function getIssueById(id: string): Promise<Issue | undefined> {
   const client = getSupabaseOrThrow();
 
-  const { data, error } = await client
-    .from("issues")
-    .select(ISSUE_SELECT)
-    .eq("id", id)
-    .maybeSingle();
+  try {
+    await ensureAdminSession();
 
-  if (error) {
-    console.error("Supabase error:", error);
-    throw new Error(error.message);
+    const { data, error } = await client
+      .from("issues")
+      .select(ISSUE_SELECT)
+      .eq("id", id)
+      .maybeSingle();
+
+    if (error) {
+      console.error("Supabase error:", error);
+      throw new Error(error.message);
+    }
+
+    if (!data) return undefined;
+
+    return mapRowToIssue(data);
+  } catch (error) {
+    throw buildServiceError("load issue details", error);
   }
-
-  if (!data) return undefined;
-
-  return mapRowToIssue(data);
 }
 
 export async function updateIssueStatus(
@@ -157,19 +200,25 @@ export async function updateIssueStatus(
 ): Promise<Issue | undefined> {
   const client = getSupabaseOrThrow();
 
-  const { data, error } = await client
-    .from("issues")
-    .update({ status })
-    .eq("id", id)
-    .select(ISSUE_SELECT)
-    .maybeSingle();
+  try {
+    await ensureAdminSession();
 
-  if (error) {
-    console.error("Supabase error:", error);
-    throw new Error(error.message);
+    const { data, error } = await client
+      .from("issues")
+      .update({ status })
+      .eq("id", id)
+      .select(ISSUE_SELECT)
+      .maybeSingle();
+
+    if (error) {
+      console.error("Supabase error:", error);
+      throw new Error(error.message);
+    }
+
+    if (!data) return undefined;
+
+    return mapRowToIssue(data);
+  } catch (error) {
+    throw buildServiceError("update issue status", error);
   }
-
-  if (!data) return undefined;
-
-  return mapRowToIssue(data);
 }

@@ -39,8 +39,9 @@ export default function DashboardPage() {
         if (!alive) return;
         setError(e instanceof Error ? e.message : "Failed to load issues.");
       } finally {
-        if (!alive) return;
-        setLoading(false);
+        if (alive) {
+          setLoading(false);
+        }
       }
     })();
 

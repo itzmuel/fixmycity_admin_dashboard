@@ -80,3 +80,26 @@ export default defineConfig([
 4. Run the app and open `/signup` to create an admin account with email and password.
 5. Add the new user's `auth.users.id` to `public.admins` (admin allowlist).
 6. Open `/login` and sign in using that email and password.
+
+## Deploy to Vercel
+
+This repository includes `vercel.json` with:
+
+- Vite build/output settings
+- SPA rewrite so direct links like `/dashboard` and `/issues/:id` resolve in production
+
+Steps:
+
+1. Push the repository to GitHub.
+2. Import the repository into Vercel.
+3. Set environment variables:
+  - `VITE_SUPABASE_URL`
+  - `VITE_SUPABASE_ANON_KEY`
+  - Optional: `VITE_ISSUE_PHOTO_BUCKET`
+4. Deploy.
+
+Quick checks on production URL:
+
+1. Signed-out visit to `/dashboard` redirects to `/login`.
+2. Admin sign-in loads dashboard.
+3. Direct refresh on `/issues/:id` still works (no 404 from host).

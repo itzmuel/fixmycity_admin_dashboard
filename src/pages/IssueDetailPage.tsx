@@ -20,13 +20,33 @@ export default function IssueDetailsPage() {
   const [issue, setIssue] = useState<Issue | null>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!id) return;
-    setLoading(true);
-    getIssueById(id)
-      .then((res) => setIssue(res ?? null))
-      .finally(() => setLoading(false));
+
+    let alive = true;
+    (async () => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const res = await getIssueById(id);
+        if (!alive) return;
+        setIssue(res ?? null);
+      } catch (loadError) {
+        if (!alive) return;
+        setError(loadError instanceof Error ? loadError.message : "Failed to load issue details.");
+      } finally {
+        if (alive) {
+          setLoading(false);
+        }
+      }
+    })();
+
+    return () => {
+      alive = false;
+    };
   }, [id]);
 
   const mapsLink = useMemo(() => {
@@ -51,9 +71,13 @@ export default function IssueDetailsPage() {
   async function setStatus(next: IssueStatus) {
     if (!id || !issue) return;
     setSaving(true);
+    setError(null);
+
     try {
       const updated = await updateIssueStatus(id, next);
       if (updated) setIssue(updated);
+    } catch (saveError) {
+      setError(saveError instanceof Error ? saveError.message : "Failed to update status.");
     } finally {
       setSaving(false);
     }
@@ -96,6 +120,21 @@ export default function IssueDetailsPage() {
 
       {/* Details */}
       <div className="card card-pad">
+        {error && (
+          <div
+            style={{
+              marginBottom: 12,
+              padding: 10,
+              borderRadius: 12,
+              border: "1px solid #ef4444",
+              color: "#ef4444",
+              fontWeight: 700,
+            }}
+          >
+            {error}
+          </div>
+        )}
+
         <div style={{ display: "grid", gap: 10 }}>
           <div><b>ID:</b> {issue.id}</div>
             <div>

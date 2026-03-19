@@ -34,3 +34,25 @@ export async function isUserAdmin(userId: string): Promise<boolean> {
 
   return Boolean(data);
 }
+
+export async function ensureAdminSession(): Promise<string> {
+  const client = getSupabaseOrThrow();
+
+  const { data, error } = await client.auth.getSession();
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  const userId = data.session?.user.id ?? null;
+  if (!userId) {
+    throw new Error("You must sign in to continue.");
+  }
+
+  const admin = await isUserAdmin(userId);
+  if (!admin) {
+    await client.auth.signOut();
+    throw new Error("This account is not in the admin allowlist.");
+  }
+
+  return userId;
+}
