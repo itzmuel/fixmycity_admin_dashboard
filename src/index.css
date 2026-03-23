@@ -97,6 +97,17 @@ a {
   color: #ffffff;
 }
 
+.btn-danger {
+  background: #dc2626;
+  border-color: #dc2626;
+  color: #ffffff;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: #b91c1c;
+  border-color: #b91c1c;
+}
+
 .pill {
   border: 1px solid #e5e7eb;
   background: #ffffff;

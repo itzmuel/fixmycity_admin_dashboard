@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import { supabase } from "../services/supabaseClient";
 import { theme } from "../theme";
@@ -21,9 +21,53 @@ function linkStyle(active: boolean) {
   } as const;
 }
 
+function getGreeting(hour: number) {
+  if (hour < 12) return "Good morning";
+  if (hour < 18) return "Good afternoon";
+  return "Good evening";
+}
+
+function getDisplayName(user: { email?: string | null; user_metadata?: { full_name?: string | null } } | null) {
+  const fullName = user?.user_metadata?.full_name?.trim();
+  if (fullName) return fullName;
+
+  const email = user?.email?.trim();
+  if (!email) return "Admin";
+
+  return email.split("@")[0] || email;
+}
+
 export default function AppShell() {
   const navigate = useNavigate();
   const [loggingOut, setLoggingOut] = useState(false);
+  const [displayName, setDisplayName] = useState("Admin");
+
+  useEffect(() => {
+    let alive = true;
+
+    (async () => {
+      if (!supabase) return;
+
+      const { data, error } = await supabase.auth.getSession();
+      if (!alive || error) return;
+
+      setDisplayName(getDisplayName(data.session?.user ?? null));
+    })();
+
+    const {
+      data: { subscription },
+    } = supabase?.auth.onAuthStateChange((_event, session) => {
+      if (!alive) return;
+      setDisplayName(getDisplayName(session?.user ?? null));
+    }) ?? { data: { subscription: { unsubscribe() {} } } };
+
+    return () => {
+      alive = false;
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const greeting = useMemo(() => `${getGreeting(new Date().getHours())}, ${displayName}`, [displayName]);
 
   async function handleLogout() {
     setLoggingOut(true);
@@ -42,6 +86,8 @@ export default function AppShell() {
     <div style={{ display: "grid", gridTemplateColumns: "260px 1fr", minHeight: "100vh" }}>
       <aside
         style={{
+          display: "flex",
+          flexDirection: "column",
           padding: 16,
           borderRight: `1px solid ${theme.colors.border}`,
           background: theme.colors.card,
@@ -67,6 +113,10 @@ export default function AppShell() {
         </div>
 
         <nav style={{ marginTop: 16, display: "grid", gap: 8 }}>
+          <div className="card card-pad" style={{ background: "#F9FAFB" }}>
+            <div style={{ fontWeight: 900, fontSize: 14 }}>{greeting}</div>
+          </div>
+
           <NavLink to="/dashboard" style={({ isActive }) => linkStyle(isActive)}>
             Dashboard
           </NavLink>
@@ -79,7 +129,7 @@ export default function AppShell() {
           </div>
         </div>
 
-        <button type="button" className="btn" style={{ marginTop: 16, width: "100%" }} disabled={loggingOut} onClick={handleLogout}>
+        <button type="button" className="btn btn-danger" style={{ marginTop: "auto", width: "100%" }} disabled={loggingOut} onClick={handleLogout}>
           {loggingOut ? "Logging out..." : "Log Out"}
         </button>
       </aside>
