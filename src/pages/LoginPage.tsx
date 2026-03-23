@@ -63,15 +63,8 @@ export default function LoginPage() {
   }
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        display: "grid",
-        placeItems: "center",
-        padding: 16,
-      }}
-    >
-      <form className="card card-pad" style={{ width: "100%", maxWidth: 460, display: "grid", gap: 12 }} onSubmit={onSubmit}>
+    <div className="auth-shell">
+      <form className="card card-pad auth-panel" onSubmit={onSubmit}>
         <div>
           <div className="h1">Login</div>
           <div className="muted" style={{ marginTop: 6 }}>

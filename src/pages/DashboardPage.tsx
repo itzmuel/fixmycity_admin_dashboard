@@ -6,6 +6,7 @@ import StatusChip from "../components/StatusChip";
 import CategoryBadge from "../components/CategoryBadge";
 
 type Filter = "all" | Issue["status"];
+const PAGE_SIZE = 8;
 
 function normalize(s: string) {
   return s.trim().toLowerCase();
@@ -15,6 +16,7 @@ export default function DashboardPage() {
   const [issues, setIssues] = useState<Issue[]>([]);
   const [filter, setFilter] = useState<Filter>("all");
   const [query, setQuery] = useState("");
+  const [page, setPage] = useState(1);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   const [loading, setLoading] = useState(true);
@@ -87,6 +89,26 @@ export default function DashboardPage() {
     });
   }, [issues, filter, query]);
 
+  useEffect(() => {
+    setPage(1);
+  }, [filter, query]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredIssues.length / PAGE_SIZE));
+
+  useEffect(() => {
+    if (page > totalPages) {
+      setPage(totalPages);
+    }
+  }, [page, totalPages]);
+
+  const paginatedIssues = useMemo(() => {
+    const start = (page - 1) * PAGE_SIZE;
+    return filteredIssues.slice(start, start + PAGE_SIZE);
+  }, [filteredIssues, page]);
+
+  const pageStart = filteredIssues.length === 0 ? 0 : (page - 1) * PAGE_SIZE + 1;
+  const pageEnd = filteredIssues.length === 0 ? 0 : Math.min(page * PAGE_SIZE, filteredIssues.length);
+
   return (
     <div style={{ display: "grid", gap: 12 }}>
       {/* Header */}
@@ -133,7 +155,7 @@ export default function DashboardPage() {
         </div>
 
         <div className="muted">
-          {loading ? "Loading..." : `Showing ${filteredIssues.length} of ${issues.length} reports`}
+          {loading ? "Loading..." : `Showing ${pageStart}-${pageEnd} of ${filteredIssues.length} filtered reports (${issues.length} total)`}
         </div>
 
         {error && (
@@ -157,7 +179,7 @@ export default function DashboardPage() {
           </thead>
 
           <tbody>
-            {filteredIssues.map((issue) => {
+            {paginatedIssues.map((issue) => {
               const photo = issue.photoUrl ?? null;
 
               return (
@@ -226,6 +248,29 @@ export default function DashboardPage() {
           </tbody>
         </table>
       </div>
+
+      {!loading && filteredIssues.length > 0 && (
+        <div className="card card-pad" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+          <div className="muted">
+            Page {page} of {totalPages}
+          </div>
+
+          <div style={{ display: "flex", gap: 8 }}>
+            <button type="button" className="btn" disabled={page === 1} onClick={() => setPage((current) => Math.max(1, current - 1))}>
+              Previous
+            </button>
+
+            <button
+              type="button"
+              className="btn"
+              disabled={page === totalPages}
+              onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
+            >
+              Next
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* IMAGE PREVIEW MODAL */}
       {previewImage && (

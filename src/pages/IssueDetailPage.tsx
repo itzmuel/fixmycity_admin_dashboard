@@ -13,6 +13,15 @@ function statusButtonClass(active: boolean) {
   return `btn ${active ? "btn-primary" : ""}`;
 }
 
+function buildMapBounds(latitude: number, longitude: number, delta = 0.005) {
+  return {
+    left: longitude - delta,
+    right: longitude + delta,
+    top: latitude + delta,
+    bottom: latitude - delta,
+  };
+}
+
 export default function IssueDetailsPage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -50,8 +59,21 @@ export default function IssueDetailsPage() {
   }, [id]);
 
   const mapsLink = useMemo(() => {
-    if (!issue?.latitude || !issue?.longitude) return null;
+    if (issue?.latitude == null || issue?.longitude == null) return null;
     return `https://www.google.com/maps?q=${issue.latitude},${issue.longitude}`;
+  }, [issue]);
+
+  const mapEmbedSrc = useMemo(() => {
+    if (issue?.latitude == null || issue?.longitude == null) return null;
+
+    const bounds = buildMapBounds(issue.latitude, issue.longitude);
+    const params = new URLSearchParams({
+      bbox: `${bounds.left},${bounds.bottom},${bounds.right},${bounds.top}`,
+      layer: "mapnik",
+      marker: `${issue.latitude},${issue.longitude}`,
+    });
+
+    return `https://www.openstreetmap.org/export/embed.html?${params.toString()}`;
   }, [issue]);
 
   const photoUrl = useMemo(() => {
@@ -102,8 +124,14 @@ export default function IssueDetailsPage() {
 
   return (
     <div style={{ display: "grid", gap: 12 }}>
+      <div>
+        <button className="btn" type="button" onClick={() => navigate(-1)}>
+          ← Back
+        </button>
+      </div>
+
       {/* Header */}
-      <div className="card card-pad" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <div className="card card-pad">
         <div>
           <div className="h1">Issue Details</div>
                 <div style={{ marginTop: 8, display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
@@ -112,10 +140,6 @@ export default function IssueDetailsPage() {
                 </div>
 
         </div>
-
-        <button className="btn" type="button" onClick={() => navigate(-1)}>
-          ← Back
-        </button>
       </div>
 
       {/* Details */}
@@ -162,12 +186,31 @@ export default function IssueDetailsPage() {
             </div>
           )}
 
-          {mapsLink && (
-            <div>
-              <b>Map:</b>{" "}
-              <a href={mapsLink} target="_blank" rel="noreferrer" style={{ color: theme.colors.primary, fontWeight: 900 }}>
-                Open in Google Maps
-              </a>
+          {mapEmbedSrc && mapsLink && (
+            <div style={{ display: "grid", gap: 8 }}>
+              <b>Map:</b>
+              <div
+                style={{
+                  borderRadius: 12,
+                  overflow: "hidden",
+                  border: `1px solid ${theme.colors.border}`,
+                  background: "#f3f4f6",
+                }}
+              >
+                <iframe
+                  title={`Map for issue ${issue.id}`}
+                  src={mapEmbedSrc}
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  style={{ width: "100%", height: 260, border: 0, display: "block" }}
+                />
+              </div>
+              <div className="muted" style={{ fontSize: 12, display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
+                <span>Pan or zoom in the map preview.</span>
+                <a href={mapsLink} target="_blank" rel="noreferrer" style={{ color: theme.colors.primary, fontWeight: 900 }}>
+                  Open in Google Maps
+                </a>
+              </div>
             </div>
           )}
         </div>

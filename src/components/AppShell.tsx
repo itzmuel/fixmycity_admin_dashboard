@@ -7,13 +7,17 @@ function linkStyle(active: boolean) {
   return {
     display: "flex",
     alignItems: "center",
+    justifyContent: "center",
     gap: 10,
     padding: "10px 12px",
     borderRadius: 14,
     textDecoration: "none",
     fontWeight: 900,
+    border: `1px solid ${active ? theme.colors.primary : theme.colors.border}`,
     color: active ? "#fff" : theme.colors.text,
-    background: active ? theme.colors.primary : "transparent",
+    background: active ? theme.colors.primary : "#F3F4F6",
+    boxShadow: active ? "0 10px 20px rgba(37, 99, 235, 0.18)" : "none",
+    transition: "background 160ms ease, color 160ms ease, border-color 160ms ease, box-shadow 160ms ease",
   } as const;
 }
 
@@ -44,20 +48,17 @@ export default function AppShell() {
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <div
+          <img
+            src="/fixmycity-web-icon.png"
+            alt="FixMyCity logo"
             style={{
               width: 44,
               height: 44,
               borderRadius: 999,
-              background: "rgba(37, 99, 235, 0.10)",
-              display: "grid",
-              placeItems: "center",
-              fontWeight: 900,
-              color: theme.colors.primary,
+              objectFit: "cover",
+              border: `1px solid ${theme.colors.border}`,
             }}
-          >
-            FMC
-          </div>
+          />
 
           <div>
             <div style={{ fontWeight: 900, fontSize: 16 }}>FixMyCity</div>

@@ -24,7 +24,7 @@ body {
   content: "";
   position: fixed;
   inset: 0;
-  background-image: url("/DT5DOUMYnctO79nhvK9Fi4wTny3cEIQGRh3uFBmN.png");
+  background-image: url("/fixmycity-web-icon.png");
   background-size: cover;
   background-position: center;
   filter: blur(10px);
@@ -121,6 +121,20 @@ a {
   outline: none;
   background: #ffffff;
   font-weight: 700;
+}
+
+.auth-shell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+}
+
+.auth-panel {
+  width: 100%;
+  max-width: 460px;
+  display: grid;
+  gap: 12px;
 }
 
 .table {
