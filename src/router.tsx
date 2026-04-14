@@ -3,6 +3,7 @@ import AppShell from "./components/AppShell";
 import RequireAdminAuth from "./components/RequireAdminAuth";
 import RouteErrorBoundary from "./components/RouteErrorBoundary";
 import DashboardPage from "./pages/DashboardPage";
+import EmailConfirmedPage from "./pages/EmailConfirmedPage";
 import IssueDetailPage from "./pages/IssueDetailPage";
 import LoginPage from "./pages/LoginPage";
 import SignupPage from "./pages/SignupPage";
@@ -10,6 +11,7 @@ import SignupPage from "./pages/SignupPage";
 export const router = createBrowserRouter([
   { path: "/login", element: <LoginPage />, errorElement: <RouteErrorBoundary /> },
   { path: "/signup", element: <SignupPage />, errorElement: <RouteErrorBoundary /> },
+  { path: "/email-confirmed", element: <EmailConfirmedPage />, errorElement: <RouteErrorBoundary /> },
   {
     path: "/",
     errorElement: <RouteErrorBoundary />,
