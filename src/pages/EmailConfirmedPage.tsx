@@ -1,4 +1,14 @@
+import { useEffect } from "react";
+import { supabase } from "../services/supabaseClient";
+
 export default function EmailConfirmedPage() {
+  // Exchange the confirmation token that Supabase appends to this URL
+  // (hash fragment for implicit flow, ?code= for PKCE flow).
+  // supabase-js v2 processes the URL automatically during getSession().
+  useEffect(() => {
+    supabase?.auth.getSession();
+  }, []);
+
   return (
     <div
       style={{
