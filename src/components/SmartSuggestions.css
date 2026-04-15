@@ -1,0 +1,89 @@
+.smart-suggestions {
+  margin-bottom: 2rem;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e0e0e0;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.smart-suggestions h3 {
+  margin: 0 0 1rem 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #424242;
+}
+
+.suggestions-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.suggestion-card {
+  border-left: 4px solid #bdbdbd;
+  padding: 1rem;
+  background-color: #fafafa;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.suggestion-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-1px);
+}
+
+.suggestion-card.priority-high {
+  border-left-color: #f44336;
+  background-color: #ffebee;
+}
+
+.suggestion-card.priority-medium {
+  border-left-color: #ff9800;
+  background-color: #fff3e0;
+}
+
+.suggestion-card.priority-low {
+  border-left-color: #4caf50;
+  background-color: #e8f5e9;
+}
+
+.suggestion-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.75rem;
+}
+
+.suggestion-header h4 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #424242;
+}
+
+.priority-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  background-color: rgba(0, 0, 0, 0.1);
+  color: #424242;
+}
+
+.suggestion-description {
+  margin: 0.5rem 0;
+  font-size: 0.9rem;
+  color: #757575;
+  line-height: 1.4;
+}
+
+.suggestion-footer {
+  margin-top: 0.75rem;
+  font-size: 0.85rem;
+  color: #bdbdbd;
+  font-weight: 600;
+}

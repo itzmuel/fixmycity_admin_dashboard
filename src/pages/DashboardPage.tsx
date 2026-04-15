@@ -4,6 +4,11 @@ import type { Issue } from "../models/issue";
 import { getIssues } from "../services/issueService";
 import StatusChip from "../components/StatusChip";
 import CategoryBadge from "../components/CategoryBadge";
+import PriorityBadge from "../components/PriorityBadge";
+import MapView from "../components/MapView";
+import NotificationsPanel from "../components/NotificationsPanel";
+import AdvancedFilters from "../components/AdvancedFilters";
+import ExportButton from "../components/ExportButton";
 
 type Filter = "all" | Issue["status"];
 const PAGE_SIZE = 8;
@@ -18,6 +23,7 @@ export default function DashboardPage() {
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [filteredIssuesFromAdvanced, setFilteredIssuesFromAdvanced] = useState<Issue[]>([]);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -78,16 +84,19 @@ export default function DashboardPage() {
   }, [issues]);
 
   const filteredIssues = useMemo(() => {
+    // Use advanced filters if any, otherwise use basic filters
+    const baseIssues = filteredIssuesFromAdvanced.length > 0 ? filteredIssuesFromAdvanced : issues;
+    
     const q = normalize(query);
 
-    return issues.filter((i) => {
+    return baseIssues.filter((i) => {
       if (filter !== "all" && i.status !== filter) return false;
       if (q.length === 0) return true;
 
       const hay = normalize([i.id, i.category, i.description, i.address ?? ""].join(" | "));
       return hay.includes(q);
     });
-  }, [issues, filter, query]);
+  }, [issues, filter, query, filteredIssuesFromAdvanced]);
 
   useEffect(() => {
     setPage(1);
@@ -111,16 +120,33 @@ export default function DashboardPage() {
 
   return (
     <div style={{ display: "grid", gap: 12 }}>
-      {/* Header */}
-      <div className="card card-pad">
-        <div className="h1">Reports</div>
-        <div className="muted" style={{ marginTop: 6 }}>
-          Review citizen submissions and update status.
+      {/* Header with Notifications */}
+      <div className="card card-pad" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
+        <div>
+          <div className="h1">City Reports Dashboard</div>
+          <div className="muted" style={{ marginTop: 6 }}>
+            Review active reports, manage operations, and open issue details.
+          </div>
         </div>
+        <NotificationsPanel issues={issues} />
       </div>
 
-      {/* Filters + Search */}
+      {/* Map View - GAME CHANGER */}
+      <MapView issues={issues} onIssueClick={(issue) => navigate(`/issues/${issue.id}`)} />
+
+      {/* Filters + Search + Download */}
       <div className="card card-pad" style={{ display: "grid", gap: 12 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+          <div style={{ fontSize: 12, color: "#999" }}>
+            {filteredIssues.length} issues found
+          </div>
+
+          <div style={{ marginLeft: "auto", display: "flex", gap: 10, alignItems: "center" }}>
+            <AdvancedFilters issues={issues} onFilter={setFilteredIssuesFromAdvanced} />
+            <ExportButton issues={filteredIssues} />
+          </div>
+        </div>
+
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
           <button type="button" className={`pill ${filter === "all" ? "pill-active" : ""}`} onClick={() => setFilter("all")}>
             All ({counts.all})
@@ -165,7 +191,7 @@ export default function DashboardPage() {
         )}
       </div>
 
-      {/* Table */}
+      {/* Issues Table */}
       <div className="card" style={{ overflow: "hidden" }}>
         <table className="table">
           <thead>
@@ -173,6 +199,7 @@ export default function DashboardPage() {
               <th className="th">Photo</th>
               <th className="th">ID</th>
               <th className="th">Category</th>
+              <th className="th">Priority</th>
               <th className="th">Status</th>
               <th className="th">Address</th>
             </tr>
@@ -230,6 +257,10 @@ export default function DashboardPage() {
                   </td>
 
                   <td className="td">
+                    {issue.priority && <PriorityBadge priority={issue.priority} />}
+                  </td>
+
+                  <td className="td">
                     <StatusChip status={issue.status} />
                   </td>
 
@@ -240,7 +271,7 @@ export default function DashboardPage() {
 
             {!loading && filteredIssues.length === 0 && (
               <tr>
-                <td className="td muted" colSpan={5} style={{ padding: 16 }}>
+                <td className="td muted" colSpan={6} style={{ padding: 16 }}>
                   No reports match your filters/search.
                 </td>
               </tr>

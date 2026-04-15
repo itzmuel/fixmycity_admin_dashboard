@@ -1,0 +1,27 @@
+.charts-panel {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 2rem;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: white;
+  border-radius: 12px;
+  border: 1px solid #e0e0e0;
+}
+
+.chart-container {
+  background: white;
+}
+
+.chart-container h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: #424242;
+}
+
+@media (max-width: 1024px) {
+  .charts-panel {
+    grid-template-columns: 1fr;
+  }
+}

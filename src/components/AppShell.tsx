@@ -120,6 +120,14 @@ export default function AppShell() {
           <NavLink to="/dashboard" style={({ isActive }) => linkStyle(isActive)}>
             Dashboard
           </NavLink>
+
+          <NavLink to="/analytics" style={({ isActive }) => linkStyle(isActive)}>
+            Analytics
+          </NavLink>
+
+          <NavLink to="/assign" style={({ isActive }) => linkStyle(isActive)}>
+            Assign
+          </NavLink>
         </nav>
 
         <div style={{ marginTop: 16 }} className="card card-pad">
