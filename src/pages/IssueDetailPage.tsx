@@ -139,7 +139,7 @@ export default function IssueDetailsPage() {
       {/* Header */}
       <div className="card card-pad">
         <div>
-          <div className="h1">🔍 Issue Details</div>
+          <div className="h1">Issue Details</div>
           <div style={{ marginTop: 8, display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
             <span className="muted" style={{ fontWeight: 900 }}>#{issue.id}</span>
             <StatusChip status={issue.status} />
@@ -319,7 +319,7 @@ export default function IssueDetailsPage() {
 
       {/* Timeline */}
       <div className="card card-pad">
-        <div className="h2">📅 Timeline</div>
+        <div className="h2">Timeline</div>
         <div style={{ marginTop: 16, display: "grid", gap: 12 }}>
           <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
             <div style={{ fontSize: 24 }}>📍</div>
@@ -337,7 +337,9 @@ export default function IssueDetailsPage() {
               <div>
                 <div style={{ fontWeight: 600 }}>Work Started</div>
                 <div className="muted" style={{ fontSize: 12 }}>
-                  Status changed to In Progress
+                  {issue.updatedAt
+                    ? `Status changed to In Progress on ${new Date(issue.updatedAt).toLocaleString()}`
+                    : "Status changed to In Progress"}
                 </div>
               </div>
             </div>
@@ -352,6 +354,18 @@ export default function IssueDetailsPage() {
                   {issue.updatedAt
                     ? new Date(issue.updatedAt).toLocaleString()
                     : "Recently"}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {issue.updatedAt && (
+            <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+              <div style={{ fontSize: 24 }}>🕒</div>
+              <div>
+                <div style={{ fontWeight: 600 }}>Last Updated</div>
+                <div className="muted" style={{ fontSize: 12 }}>
+                  {new Date(issue.updatedAt).toLocaleString()}
                 </div>
               </div>
             </div>
