@@ -50,6 +50,7 @@ type SupabaseIssueRow = {
   description: string;
   status: IssueStatus;
   created_at: string;
+  updated_at: string;
   address: string | null;
   latitude: number | null;
   longitude: number | null;
@@ -136,6 +137,7 @@ function mapRowToIssue(r: SupabaseIssueRow): Issue {
     description: r.description,
     status: r.status,
     createdAt: r.created_at,
+    updatedAt: r.updated_at,
     address: r.address ?? undefined,
     latitude: r.latitude ?? undefined,
     longitude: r.longitude ?? undefined,
@@ -145,7 +147,7 @@ function mapRowToIssue(r: SupabaseIssueRow): Issue {
 }
 
 const ISSUE_SELECT =
-  "id, category, description, status, created_at, address, latitude, longitude, photo_url";
+  "id, category, description, status, created_at, updated_at, address, latitude, longitude, photo_url";
 
 export async function getIssues(): Promise<Issue[]> {
   const client = getSupabaseOrThrow();
