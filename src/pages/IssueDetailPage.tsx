@@ -338,8 +338,8 @@ export default function IssueDetailsPage() {
                 <div style={{ fontWeight: 600 }}>Work Started</div>
                 <div className="muted" style={{ fontSize: 12 }}>
                   {issue.updatedAt
-                    ? `Status changed to In Progress on ${new Date(issue.updatedAt).toLocaleString()}`
-                    : "Status changed to In Progress"}
+                    ? new Date(issue.updatedAt).toLocaleString()
+                    : "Update time unavailable"}
                 </div>
               </div>
             </div>
@@ -353,7 +353,7 @@ export default function IssueDetailsPage() {
                 <div className="muted" style={{ fontSize: 12 }}>
                   {issue.updatedAt
                     ? new Date(issue.updatedAt).toLocaleString()
-                    : "Recently"}
+                    : "Update time unavailable"}
                 </div>
               </div>
             </div>
