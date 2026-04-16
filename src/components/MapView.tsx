@@ -1,8 +1,19 @@
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { useMemo } from "react";
+import L from "leaflet";
+import markerIcon2xUrl from "leaflet/dist/images/marker-icon-2x.png";
+import markerIconUrl from "leaflet/dist/images/marker-icon.png";
+import markerShadowUrl from "leaflet/dist/images/marker-shadow.png";
 import type { Issue } from "../models/issue";
 import "./MapView.css";
+
+// Ensure default Leaflet markers render correctly in Vite builds.
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: markerIcon2xUrl,
+  iconUrl: markerIconUrl,
+  shadowUrl: markerShadowUrl,
+});
 
 interface MapViewProps {
   issues: Issue[];
@@ -12,7 +23,7 @@ interface MapViewProps {
 export default function MapView({ issues, onIssueClick }: MapViewProps) {
   // Filter issues with coordinates
   const issuesWithLocation = useMemo(
-    () => issues.filter((i) => i.latitude && i.longitude),
+    () => issues.filter((i) => i.latitude != null && i.longitude != null),
     [issues]
   );
 
@@ -45,7 +56,7 @@ export default function MapView({ issues, onIssueClick }: MapViewProps) {
         {issuesWithLocation.map((issue) => (
           <Marker
             key={issue.id}
-            position={[issue.latitude ?? 0, issue.longitude ?? 0]}
+            position={[issue.latitude as number, issue.longitude as number]}
             eventHandlers={{
               click: () => onIssueClick?.(issue),
             }}
