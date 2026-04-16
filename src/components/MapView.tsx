@@ -2,18 +2,8 @@ import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { useMemo } from "react";
 import L from "leaflet";
-import markerIcon2xUrl from "leaflet/dist/images/marker-icon-2x.png";
-import markerIconUrl from "leaflet/dist/images/marker-icon.png";
-import markerShadowUrl from "leaflet/dist/images/marker-shadow.png";
 import type { Issue } from "../models/issue";
 import "./MapView.css";
-
-// Ensure default Leaflet markers render correctly in Vite builds.
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: markerIcon2xUrl,
-  iconUrl: markerIconUrl,
-  shadowUrl: markerShadowUrl,
-});
 
 interface MapViewProps {
   issues: Issue[];
@@ -21,6 +11,18 @@ interface MapViewProps {
 }
 
 export default function MapView({ issues, onIssueClick }: MapViewProps) {
+  const issueMarkerIcon = useMemo(
+    () =>
+      L.divIcon({
+        className: "map-issue-marker-wrapper",
+        html: '<div class="map-issue-marker"></div>',
+        iconSize: [20, 20],
+        iconAnchor: [10, 20],
+        popupAnchor: [0, -18],
+      }),
+    []
+  );
+
   // Filter issues with coordinates
   const issuesWithLocation = useMemo(
     () => issues.filter((i) => i.latitude != null && i.longitude != null),
@@ -57,6 +59,7 @@ export default function MapView({ issues, onIssueClick }: MapViewProps) {
           <Marker
             key={issue.id}
             position={[issue.latitude as number, issue.longitude as number]}
+            icon={issueMarkerIcon}
             eventHandlers={{
               click: () => onIssueClick?.(issue),
             }}

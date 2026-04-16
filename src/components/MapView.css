@@ -62,3 +62,30 @@
 .leaflet-container {
   font-family: inherit;
 }
+
+.map-issue-marker-wrapper {
+  background: transparent;
+  border: none;
+}
+
+.map-issue-marker {
+  width: 20px;
+  height: 20px;
+  position: relative;
+  background: #ef4444;
+  border: 2px solid #ffffff;
+  border-radius: 50% 50% 50% 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  transform: rotate(-45deg);
+}
+
+.map-issue-marker::after {
+  content: "";
+  width: 6px;
+  height: 6px;
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  border-radius: 50%;
+  background: #ffffff;
+}
