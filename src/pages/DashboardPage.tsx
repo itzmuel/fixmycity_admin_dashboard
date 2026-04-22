@@ -109,7 +109,6 @@ export default function DashboardPage() {
 
   useEffect(() => {
     const unsubscribe = subscribeToIssueChanges((event) => {
-      setLiveSyncConnected(true);
 
       if (event.eventType === "DELETE" && event.issueId) {
         setIssues((previous) => previous.filter((issue) => issue.id !== event.issueId));
@@ -155,7 +154,7 @@ export default function DashboardPage() {
 
         return [nextNotification, ...previous].slice(0, 30);
       });
-    });
+    }, setLiveSyncConnected);
 
     if (!unsubscribe) {
       setLiveSyncConnected(false);

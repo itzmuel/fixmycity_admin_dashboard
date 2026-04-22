@@ -300,7 +300,10 @@ async function queueStatusNotification(
   }
 }
 
-export function subscribeToIssueChanges(onChange: (event: IssueChangeEvent) => void): (() => void) | undefined {
+export function subscribeToIssueChanges(
+  onChange: (event: IssueChangeEvent) => void,
+  onConnectionStateChange?: (connected: boolean) => void
+): (() => void) | undefined {
   const client = supabase;
   if (!client) return undefined;
 
@@ -323,7 +326,10 @@ export function subscribeToIssueChanges(onChange: (event: IssueChangeEvent) => v
         onChange({ eventType: normalizedEventType, issue, issueId: row.id });
       }
     )
-    .subscribe();
+    .subscribe((status) => {
+      if (!onConnectionStateChange) return;
+      onConnectionStateChange(status === "SUBSCRIBED");
+    });
 
   return () => {
     void client.removeChannel(channel);

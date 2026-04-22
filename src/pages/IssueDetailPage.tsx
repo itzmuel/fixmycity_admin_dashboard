@@ -107,7 +107,6 @@ export default function IssueDetailsPage() {
 
     const unsubscribe = subscribeToIssueChanges((event) => {
       if (event.issueId !== id) return;
-      setLiveSyncConnected(true);
 
       if (event.eventType === "DELETE") {
         setIssue(null);
@@ -123,7 +122,7 @@ export default function IssueDetailsPage() {
         const latest = await getIssueById(id);
         setIssue(latest ?? null);
       })();
-    });
+    }, setLiveSyncConnected);
 
     if (!unsubscribe) {
       setLiveSyncConnected(false);
