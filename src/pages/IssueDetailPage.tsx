@@ -2,7 +2,16 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import type { Issue } from "../models/issue";
 import type { IssueStatus, IssuePriority } from "../models/issue";
-import { getIssueById, updateIssueStatus } from "../services/issueService";
+import type { CategorySuggestion } from "../services/issueService";
+import {
+  countNearbyIssues,
+  getIssueById,
+  getIssues,
+  subscribeToIssueChanges,
+  suggestIssueCategory,
+  updateIssueCategory,
+  updateIssueStatus,
+} from "../services/issueService";
 import { theme } from "../theme";
 import StatusChip from "../components/StatusChip";
 import CategoryBadge from "../components/CategoryBadge";
@@ -24,6 +33,31 @@ function buildMapBounds(latitude: number, longitude: number, delta = 0.005) {
   };
 }
 
+function formatSla(issue: Issue): { label: string; color: string; background: string } {
+  const createdAtMs = new Date(issue.createdAt).getTime();
+  const slaDueAtMs = issue.slaDueAt ? new Date(issue.slaDueAt).getTime() : createdAtMs + 48 * 60 * 60 * 1000;
+  const resolvedAtMs = issue.resolvedAt
+    ? new Date(issue.resolvedAt).getTime()
+    : issue.status === "resolved" && issue.updatedAt
+      ? new Date(issue.updatedAt).getTime()
+      : null;
+
+  if (resolvedAtMs != null) {
+    const withinSla = resolvedAtMs <= slaDueAtMs;
+    return {
+      label: withinSla ? "Resolved in 48h SLA" : "Resolved after SLA",
+      color: withinSla ? "#166534" : "#7f1d1d",
+      background: withinSla ? "#dcfce7" : "#fee2e2",
+    };
+  }
+
+  if (Date.now() > slaDueAtMs) {
+    return { label: "Overdue", color: "#7f1d1d", background: "#fee2e2" };
+  }
+
+  return { label: "On track", color: "#166534", background: "#dcfce7" };
+}
+
 export default function IssueDetailsPage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -33,6 +67,10 @@ export default function IssueDetailsPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedPriority, setSelectedPriority] = useState<IssuePriority>("medium");
+  const [nearbyCount, setNearbyCount] = useState(0);
+  const [liveSyncConnected, setLiveSyncConnected] = useState(false);
+  const [categorySuggestion, setCategorySuggestion] = useState<CategorySuggestion | null>(null);
+  const [applyingSuggestion, setApplyingSuggestion] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -63,6 +101,85 @@ export default function IssueDetailsPage() {
       alive = false;
     };
   }, [id]);
+
+  useEffect(() => {
+    if (!id) return;
+
+    const unsubscribe = subscribeToIssueChanges((event) => {
+      if (event.issueId !== id) return;
+      setLiveSyncConnected(true);
+
+      if (event.eventType === "DELETE") {
+        setIssue(null);
+        return;
+      }
+
+      if (event.issue) {
+        setIssue(event.issue);
+        return;
+      }
+
+      void (async () => {
+        const latest = await getIssueById(id);
+        setIssue(latest ?? null);
+      })();
+    });
+
+    if (!unsubscribe) {
+      setLiveSyncConnected(false);
+      return;
+    }
+
+    return () => {
+      unsubscribe();
+      setLiveSyncConnected(false);
+    };
+  }, [id]);
+
+  useEffect(() => {
+    if (!issue?.id) return;
+
+    let alive = true;
+    void (async () => {
+      try {
+        const allIssues = await getIssues();
+        if (!alive) return;
+        setNearbyCount(countNearbyIssues(allIssues, issue.id, 20));
+      } catch {
+        if (!alive) return;
+        setNearbyCount(0);
+      }
+    })();
+
+    return () => {
+      alive = false;
+    };
+  }, [issue?.id, issue?.status]);
+
+  useEffect(() => {
+    if (!issue?.description) return;
+
+    let alive = true;
+    void (async () => {
+      try {
+        const suggestion = await suggestIssueCategory({
+          description: issue.description,
+          address: issue.address,
+          category: issue.category,
+        });
+
+        if (!alive) return;
+        setCategorySuggestion(suggestion);
+      } catch {
+        if (!alive) return;
+        setCategorySuggestion(null);
+      }
+    })();
+
+    return () => {
+      alive = false;
+    };
+  }, [issue?.id, issue?.description, issue?.address, issue?.category]);
 
   const mapsLink = useMemo(() => {
     if (issue?.latitude == null || issue?.longitude == null) return null;
@@ -111,6 +228,22 @@ export default function IssueDetailsPage() {
     }
   }
 
+  async function applySuggestedCategory() {
+    if (!issue || !categorySuggestion || issue.category === categorySuggestion.category) return;
+
+    setApplyingSuggestion(true);
+    setError(null);
+
+    try {
+      const updated = await updateIssueCategory(issue.id, categorySuggestion.category);
+      if (updated) setIssue(updated);
+    } catch (saveError) {
+      setError(saveError instanceof Error ? saveError.message : "Failed to update category.");
+    } finally {
+      setApplyingSuggestion(false);
+    }
+  }
+
   if (!id) return <div className="card card-pad">Missing issue id.</div>;
 
   if (loading) return <div className="card card-pad">Loading…</div>;
@@ -128,6 +261,8 @@ export default function IssueDetailsPage() {
     );
   }
 
+  const sla = formatSla(issue);
+
   return (
     <div style={{ display: "grid", gap: 12 }}>
       <div>
@@ -144,9 +279,67 @@ export default function IssueDetailsPage() {
             <span className="muted" style={{ fontWeight: 900 }}>#{issue.id}</span>
             <StatusChip status={issue.status} />
             {issue.priority && <PriorityBadge priority={issue.priority} />}
+            <span
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                padding: "4px 10px",
+                borderRadius: 999,
+                fontSize: 12,
+                fontWeight: 900,
+                color: sla.color,
+                background: sla.background,
+              }}
+            >
+              {sla.label}
+            </span>
+            <span style={{ fontSize: 12, fontWeight: 800, color: liveSyncConnected ? "#166534" : "#92400e" }}>
+              {liveSyncConnected ? "Live sync active" : "Live sync unavailable"}
+            </span>
           </div>
         </div>
       </div>
+
+      {nearbyCount > 0 && (
+        <div
+          className="card card-pad"
+          style={{ border: "1px solid #f59e0b", background: "#fffbeb", color: "#92400e", fontWeight: 800 }}
+        >
+          Similar issue already reported nearby: {nearbyCount} report(s) within ~20 meters.
+        </div>
+      )}
+
+      {categorySuggestion && (
+        <div className="card card-pad" style={{ border: "1px solid #c7d2fe", background: "#eef2ff" }}>
+          <div className="h2" style={{ marginBottom: 8 }}>AI Category Suggestion</div>
+          <div style={{ display: "grid", gap: 8 }}>
+            <div>
+              Suggested: <b>{categorySuggestion.category}</b>
+            </div>
+            <div className="muted" style={{ fontSize: 13 }}>
+              Confidence: {Math.round(categorySuggestion.confidence * 100)}% • Source: {categorySuggestion.source}
+            </div>
+            <div className="muted" style={{ fontSize: 13 }}>
+              {categorySuggestion.reason}
+            </div>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              <button
+                type="button"
+                className="btn btn-primary"
+                disabled={applyingSuggestion || issue.category === categorySuggestion.category}
+                onClick={applySuggestedCategory}
+              >
+                {applyingSuggestion ? "Applying..." : "Apply Suggested Category"}
+              </button>
+              {issue.category === categorySuggestion.category && (
+                <span className="muted" style={{ alignSelf: "center", fontSize: 12, fontWeight: 800 }}>
+                  Current category already matches suggestion.
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Metadata Cards */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 12 }}>

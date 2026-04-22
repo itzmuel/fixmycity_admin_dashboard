@@ -125,6 +125,10 @@ export default function AppShell() {
             Analytics
           </NavLink>
 
+          <NavLink to="/notifications" style={({ isActive }) => linkStyle(isActive)}>
+            Notifications Queue
+          </NavLink>
+
           <NavLink to="/assign" style={({ isActive }) => linkStyle(isActive)}>
             Assign
           </NavLink>

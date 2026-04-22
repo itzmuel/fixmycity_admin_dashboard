@@ -39,9 +39,10 @@ npm run dev
 3. Verify dashboard list loads.
 4. Open issue details.
 5. Change status from Submitted -> In Progress -> Resolved.
-6. Refresh and verify status persists.
-7. Sign out.
-8. Attempt login with non-admin account and verify denial.
+6. Open Notifications Queue and verify new status_changed event appears.
+7. Refresh and verify status persists.
+8. Sign out.
+9. Attempt login with non-admin account and verify denial.
 
 ## 4) Troubleshooting
 
@@ -60,6 +61,7 @@ If dashboard cannot load/update:
 4. Deploy to hosting target.
 5. Verify production URL with admin smoke test.
 6. Record commit SHA and deployment timestamp.
+7. Verify Supabase Edge Functions `notification-dispatch` and `categorize-issue` are deployed.
 
 ## 6) Vercel Deployment (Recommended)
 
@@ -86,10 +88,11 @@ Run this against the live URL (not localhost):
 2. Sign in with allowlisted admin account.
 3. Verify redirect to `/dashboard` and report list loads.
 4. Open an issue details page and update status.
-5. Refresh and verify status persisted.
-6. Open `https://YOUR_DOMAIN/dashboard` while signed out and verify redirect to `/login`.
-7. Open `https://YOUR_DOMAIN/issues/KNOWN_ID` directly and verify route loads (rewrite works).
-8. Attempt sign-in with non-admin user and verify access denial.
+5. Open `https://YOUR_DOMAIN/notifications` and verify queue page loads.
+6. Refresh and verify status persisted.
+7. Open `https://YOUR_DOMAIN/dashboard` while signed out and verify redirect to `/login`.
+8. Open `https://YOUR_DOMAIN/issues/KNOWN_ID` directly and verify route loads (rewrite works).
+9. Attempt sign-in with non-admin user and verify access denial.
 
 ## 8) Alternative Hosting Targets
 

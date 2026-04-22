@@ -10,6 +10,7 @@ const DashboardPage = lazy(() => import("./pages/DashboardPage"));
 const AssignPage = lazy(() => import("./pages/AssignPage"));
 const EmailConfirmedPage = lazy(() => import("./pages/EmailConfirmedPage"));
 const IssueDetailPage = lazy(() => import("./pages/IssueDetailPage"));
+const NotificationsQueuePage = lazy(() => import("./pages/NotificationsQueuePage"));
 const LoginPage = lazy(() => import("./pages/LoginPage"));
 const SignupPage = lazy(() => import("./pages/SignupPage"));
 
@@ -37,6 +38,7 @@ export const router = createBrowserRouter([
       { index: true, element: <Navigate to="/dashboard" replace /> },
       { path: "/dashboard", element: withSuspense(<DashboardPage />) },
       { path: "/analytics", element: withSuspense(<AnalyticsPage />) },
+      { path: "/notifications", element: withSuspense(<NotificationsQueuePage />) },
       { path: "/assign", element: withSuspense(<AssignPage />) },
       { path: "/issues/:id", element: withSuspense(<IssueDetailPage />) },
     ],

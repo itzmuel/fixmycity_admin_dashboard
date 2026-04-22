@@ -15,13 +15,13 @@ interface Notification {
 
 interface NotificationsPanelProps {
   issues: Issue[];
+  realtimeNotifications?: Notification[];
 }
 
-export default function NotificationsPanel({ issues }: NotificationsPanelProps) {
+export default function NotificationsPanel({ issues, realtimeNotifications = [] }: NotificationsPanelProps) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isOpen, setIsOpen] = useState(false);
 
-  // Simulate new notifications (in a real app, would come from real-time subscription)
   useEffect(() => {
     const lastHour = new Date(Date.now() - 60 * 60 * 1000);
     const recentIssues = issues.filter(
@@ -44,7 +44,24 @@ export default function NotificationsPanel({ issues }: NotificationsPanelProps) 
         ...prev.filter((n) => !newNotifications.find((nn) => nn.issueId === n.issueId)),
       ]);
     }
-  }, [issues.length]); // Only on issues length change to avoid infinite loops
+  }, [issues]);
+
+  useEffect(() => {
+    if (realtimeNotifications.length === 0) return;
+
+    setNotifications((prev) => {
+      const next = [...realtimeNotifications, ...prev];
+      const deduped = new Map<string, Notification>();
+
+      for (const notification of next) {
+        if (!deduped.has(notification.id)) {
+          deduped.set(notification.id, notification);
+        }
+      }
+
+      return Array.from(deduped.values());
+    });
+  }, [realtimeNotifications]);
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 

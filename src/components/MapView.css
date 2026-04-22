@@ -12,7 +12,40 @@
   margin: 0;
   font-size: 1.1rem;
   font-weight: 600;
+}
+
+.map-header {
+  padding: 1rem 1.5rem;
   border-bottom: 1px solid #e0e0e0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.map-mode-switch {
+  display: inline-flex;
+  background: #f3f4f6;
+  border-radius: 999px;
+  padding: 4px;
+  border: 1px solid #e5e7eb;
+}
+
+.map-mode-btn {
+  border: 0;
+  background: transparent;
+  color: #4b5563;
+  font-weight: 700;
+  font-size: 0.8rem;
+  border-radius: 999px;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+.map-mode-btn-active {
+  background: #111827;
+  color: #ffffff;
 }
 
 .map-popup {

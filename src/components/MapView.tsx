@@ -1,8 +1,9 @@
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, Circle } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import L from "leaflet";
 import type { Issue } from "../models/issue";
+import { distanceInMeters } from "../services/issueService";
 import "./MapView.css";
 
 interface MapViewProps {
@@ -11,6 +12,8 @@ interface MapViewProps {
 }
 
 export default function MapView({ issues, onIssueClick }: MapViewProps) {
+  const [viewMode, setViewMode] = useState<"pins" | "heatmap" | "both">("both");
+
   const issueMarkerIcon = useMemo(
     () =>
       L.divIcon({
@@ -43,9 +46,51 @@ export default function MapView({ issues, onIssueClick }: MapViewProps) {
     return [avgLat, avgLng];
   }, [issuesWithLocation]);
 
+  const hotspots = useMemo(() => {
+    return issuesWithLocation.map((issue) => {
+      const nearbyCount = issuesWithLocation.filter((candidate) => {
+        if (candidate.latitude == null || candidate.longitude == null || issue.latitude == null || issue.longitude == null) {
+          return false;
+        }
+
+        return distanceInMeters(issue.latitude, issue.longitude, candidate.latitude, candidate.longitude) <= 120;
+      }).length;
+
+      return {
+        issue,
+        nearbyCount,
+      };
+    });
+  }, [issuesWithLocation]);
+
   return (
     <div className="map-view">
-      <h3>Issue Map</h3>
+      <div className="map-header">
+        <h3>Issue Map</h3>
+        <div className="map-mode-switch" role="group" aria-label="Map display mode">
+          <button
+            type="button"
+            className={`map-mode-btn ${viewMode === "pins" ? "map-mode-btn-active" : ""}`}
+            onClick={() => setViewMode("pins")}
+          >
+            Pins
+          </button>
+          <button
+            type="button"
+            className={`map-mode-btn ${viewMode === "heatmap" ? "map-mode-btn-active" : ""}`}
+            onClick={() => setViewMode("heatmap")}
+          >
+            Heatmap
+          </button>
+          <button
+            type="button"
+            className={`map-mode-btn ${viewMode === "both" ? "map-mode-btn-active" : ""}`}
+            onClick={() => setViewMode("both")}
+          >
+            Both
+          </button>
+        </div>
+      </div>
       <MapContainer
         center={[center[0] as number, center[1] as number]}
         zoom={13}
@@ -55,7 +100,28 @@ export default function MapView({ issues, onIssueClick }: MapViewProps) {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
 
-        {issuesWithLocation.map((issue) => (
+        {(viewMode === "heatmap" || viewMode === "both") &&
+          hotspots.map(({ issue, nearbyCount }) => {
+            const radius = 45 + nearbyCount * 15;
+            const fillOpacity = Math.min(0.15 + nearbyCount * 0.08, 0.55);
+            const color = nearbyCount >= 6 ? "#b91c1c" : nearbyCount >= 4 ? "#ea580c" : "#f59e0b";
+
+            return (
+              <Circle
+                key={`hotspot-${issue.id}`}
+                center={[issue.latitude as number, issue.longitude as number]}
+                radius={radius}
+                pathOptions={{
+                  color,
+                  weight: 1,
+                  fillColor: color,
+                  fillOpacity,
+                }}
+              />
+            );
+          })}
+
+        {(viewMode === "pins" || viewMode === "both") && issuesWithLocation.map((issue) => (
           <Marker
             key={issue.id}
             position={[issue.latitude as number, issue.longitude as number]}
@@ -81,7 +147,7 @@ export default function MapView({ issues, onIssueClick }: MapViewProps) {
         ))}
       </MapContainer>
       <div className="map-info">
-        {issuesWithLocation.length} issues with location data
+        {issuesWithLocation.length} issues with location data • Heatmap highlights hotspot clusters
       </div>
     </div>
   );

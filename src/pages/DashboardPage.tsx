@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import type { Issue } from "../models/issue";
-import { getIssues } from "../services/issueService";
+import { countNearbyIssues, getIssues, subscribeToIssueChanges } from "../services/issueService";
 import StatusChip from "../components/StatusChip";
 import CategoryBadge from "../components/CategoryBadge";
 import PriorityBadge from "../components/PriorityBadge";
@@ -12,9 +12,50 @@ import ExportButton from "../components/ExportButton";
 
 type Filter = "all" | Issue["status"];
 const PAGE_SIZE = 8;
+const SLA_TARGET_HOURS = 48;
+
+type RealtimeNotification = {
+  id: string;
+  type: "new_report" | "status_change" | "high_priority";
+  title: string;
+  message: string;
+  issueId: string;
+  timestamp: Date;
+  read: boolean;
+};
 
 function normalize(s: string) {
   return s.trim().toLowerCase();
+}
+
+function formatSlaState(issue: Issue): { label: string; color: string; background: string } {
+  const createdAtMs = new Date(issue.createdAt).getTime();
+  const slaDueAtMs = issue.slaDueAt ? new Date(issue.slaDueAt).getTime() : createdAtMs + SLA_TARGET_HOURS * 60 * 60 * 1000;
+  const resolvedAtMs = issue.resolvedAt ? new Date(issue.resolvedAt).getTime() : issue.status === "resolved" && issue.updatedAt ? new Date(issue.updatedAt).getTime() : null;
+
+  if (resolvedAtMs != null) {
+    const withinSla = resolvedAtMs <= slaDueAtMs;
+    return {
+      label: withinSla ? "Resolved in SLA" : "Resolved late",
+      color: withinSla ? "#166534" : "#7f1d1d",
+      background: withinSla ? "#dcfce7" : "#fee2e2",
+    };
+  }
+
+  if (Date.now() > slaDueAtMs) {
+    return { label: "Overdue", color: "#7f1d1d", background: "#fee2e2" };
+  }
+
+  return { label: "On time", color: "#166534", background: "#dcfce7" };
+}
+
+function upsertIssueById(previous: Issue[], incoming: Issue): Issue[] {
+  const alreadyExists = previous.some((issue) => issue.id === incoming.id);
+  const next = alreadyExists
+    ? previous.map((issue) => (issue.id === incoming.id ? incoming : issue))
+    : [incoming, ...previous];
+
+  return next.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }
 
 export default function DashboardPage() {
@@ -24,11 +65,19 @@ export default function DashboardPage() {
   const [page, setPage] = useState(1);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [filteredIssuesFromAdvanced, setFilteredIssuesFromAdvanced] = useState<Issue[]>([]);
+  const [realtimeNotifications, setRealtimeNotifications] = useState<RealtimeNotification[]>([]);
+  const [duplicateAlert, setDuplicateAlert] = useState<string | null>(null);
+  const [liveSyncConnected, setLiveSyncConnected] = useState(false);
 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const navigate = useNavigate();
+
+  const refreshIssues = useCallback(async () => {
+    const data = await getIssues();
+    setIssues(data);
+  }, []);
 
   // Load issues
   useEffect(() => {
@@ -58,6 +107,67 @@ export default function DashboardPage() {
     };
   }, []);
 
+  useEffect(() => {
+    const unsubscribe = subscribeToIssueChanges((event) => {
+      setLiveSyncConnected(true);
+
+      if (event.eventType === "DELETE" && event.issueId) {
+        setIssues((previous) => previous.filter((issue) => issue.id !== event.issueId));
+        return;
+      }
+
+      if (!event.issue) {
+        void refreshIssues();
+        return;
+      }
+
+      const incomingIssue = event.issue;
+
+      setIssues((previous) => {
+        const next = upsertIssueById(previous, incomingIssue as Issue);
+
+        if (event.eventType === "INSERT") {
+          const nearbyCount = countNearbyIssues(next, incomingIssue.id, 20);
+          if (nearbyCount > 0) {
+            setDuplicateAlert(`Similar issue already reported nearby (${nearbyCount} within ~20m).`);
+          }
+        }
+
+        return next;
+      });
+
+      const notificationType = event.eventType === "INSERT" ? "new_report" : "status_change";
+      const notificationTitle = event.eventType === "INSERT" ? "New report submitted" : "Issue status updated";
+
+      setRealtimeNotifications((previous) => {
+        const nextNotification: RealtimeNotification = {
+          id: `rt-${event.eventType}-${event.issue?.id}-${Date.now()}`,
+          type: notificationType,
+          title: notificationTitle,
+          message:
+            event.eventType === "INSERT"
+              ? `${event.issue?.category} reported at ${event.issue?.address || "unknown location"}`
+              : `${event.issue?.category} changed to ${event.issue?.status}`,
+          issueId: event.issue?.id ?? "unknown",
+          timestamp: new Date(),
+          read: false,
+        };
+
+        return [nextNotification, ...previous].slice(0, 30);
+      });
+    });
+
+    if (!unsubscribe) {
+      setLiveSyncConnected(false);
+      return;
+    }
+
+    return () => {
+      unsubscribe();
+      setLiveSyncConnected(false);
+    };
+  }, [refreshIssues]);
+
   // Close modal on ESC + lock scroll while open
   useEffect(() => {
     if (!previewImage) return;
@@ -81,6 +191,14 @@ export default function DashboardPage() {
     const inProgress = issues.filter((i) => i.status === "in_progress").length;
     const resolved = issues.filter((i) => i.status === "resolved").length;
     return { submitted, inProgress, resolved, all: issues.length };
+  }, [issues]);
+
+  const duplicateCounts = useMemo(() => {
+    const countsByIssueId = new Map<string, number>();
+    for (const issue of issues) {
+      countsByIssueId.set(issue.id, countNearbyIssues(issues, issue.id, 20));
+    }
+    return countsByIssueId;
   }, [issues]);
 
   const filteredIssues = useMemo(() => {
@@ -127,9 +245,24 @@ export default function DashboardPage() {
           <div className="muted" style={{ marginTop: 6 }}>
             Review active reports, manage operations, and open issue details.
           </div>
+          <div style={{ marginTop: 8, fontSize: 12, fontWeight: 800, color: liveSyncConnected ? "#166534" : "#92400e" }}>
+            {liveSyncConnected ? "Live sync connected" : "Live sync unavailable"}
+          </div>
         </div>
-        <NotificationsPanel issues={issues} />
+        <NotificationsPanel issues={issues} realtimeNotifications={realtimeNotifications} />
       </div>
+
+      {duplicateAlert && (
+        <div
+          className="card card-pad"
+          style={{ border: "1px solid #f59e0b", background: "#fffbeb", color: "#92400e", fontWeight: 800, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}
+        >
+          <span>{duplicateAlert}</span>
+          <button type="button" className="btn" onClick={() => setDuplicateAlert(null)}>
+            Dismiss
+          </button>
+        </div>
+      )}
 
       {/* Map View - GAME CHANGER */}
       <MapView issues={issues} onIssueClick={(issue) => navigate(`/issues/${issue.id}`)} />
@@ -201,6 +334,8 @@ export default function DashboardPage() {
               <th className="th">Category</th>
               <th className="th">Priority</th>
               <th className="th">Status</th>
+              <th className="th">SLA</th>
+              <th className="th">Duplicate Risk</th>
               <th className="th">Address</th>
             </tr>
           </thead>
@@ -264,6 +399,38 @@ export default function DashboardPage() {
                     <StatusChip status={issue.status} />
                   </td>
 
+                  <td className="td">
+                    {(() => {
+                      const sla = formatSlaState(issue);
+                      return (
+                        <span
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            padding: "4px 10px",
+                            borderRadius: 999,
+                            fontSize: 12,
+                            fontWeight: 900,
+                            color: sla.color,
+                            background: sla.background,
+                          }}
+                        >
+                          {sla.label}
+                        </span>
+                      );
+                    })()}
+                  </td>
+
+                  <td className="td" style={{ fontWeight: 800 }}>
+                    {duplicateCounts.get(issue.id) && (duplicateCounts.get(issue.id) as number) > 0 ? (
+                      <span style={{ color: "#b45309" }}>
+                        {duplicateCounts.get(issue.id)} nearby
+                      </span>
+                    ) : (
+                      <span style={{ color: "#166534" }}>Low</span>
+                    )}
+                  </td>
+
                   <td className="td">{issue.address ?? "—"}</td>
                 </tr>
               );
@@ -271,7 +438,7 @@ export default function DashboardPage() {
 
             {!loading && filteredIssues.length === 0 && (
               <tr>
-                <td className="td muted" colSpan={6} style={{ padding: 16 }}>
+                <td className="td muted" colSpan={8} style={{ padding: 16 }}>
                   No reports match your filters/search.
                 </td>
               </tr>
