@@ -14,6 +14,7 @@ export type CategorySuggestion = {
   confidence: number;
   reason: string;
   source: "edge-function" | "heuristic";
+  priority_score: number;
 };
 
 export type NotificationEventStatus = "pending" | "sent" | "failed";
@@ -539,31 +540,58 @@ export function validateIssuePhotoUpload(file: File): { valid: boolean; message?
   return validateIssuePhotoPayload(file);
 }
 
+function priorityScore(description: string): number {
+  const text = description.toLowerCase();
+  
+  // Critical safety hazards: 5
+  if (/water main burst|gas leak|major flood|collapse|sinkhole|traffic light not working/.test(text)) {
+    return 5;
+  }
+  
+  // High priority: 4
+  if (/pothole|road crack|asphalt damage|streetlight|flood|sewer|water leak/.test(text)) {
+    return 4;
+  }
+  
+  // Medium priority: 3
+  if (/garbage|trash|graffiti|vandal|sidewalk damage|curb damage/.test(text)) {
+    return 3;
+  }
+  
+  // Low priority: 2
+  if (/faded|paint|cosmetic|worn/.test(text)) {
+    return 2;
+  }
+  
+  // Default: 1
+  return 1;
+}
+
 function suggestFromHeuristics(description: string): CategorySuggestion {
   const text = description.toLowerCase();
 
   if (/pothole|road crack|asphalt|sinkhole|road damage/.test(text)) {
-    return { category: "Pothole", confidence: 0.82, reason: "Detected road surface damage keywords.", source: "heuristic" };
+    return { category: "Pothole", confidence: 0.82, reason: "Detected road surface damage keywords.", source: "heuristic", priority_score: 4 };
   }
 
   if (/streetlight|traffic light|lamp|light not working|dark street/.test(text)) {
-    return { category: "Streetlight", confidence: 0.8, reason: "Detected lighting/visibility keywords.", source: "heuristic" };
+    return { category: "Streetlight", confidence: 0.8, reason: "Detected lighting/visibility keywords.", source: "heuristic", priority_score: 4 };
   }
 
   if (/garbage|trash|litter|dumping|waste/.test(text)) {
-    return { category: "Garbage", confidence: 0.78, reason: "Detected waste and sanitation keywords.", source: "heuristic" };
+    return { category: "Garbage", confidence: 0.78, reason: "Detected waste and sanitation keywords.", source: "heuristic", priority_score: 3 };
   }
 
   if (/flood|drain|sewer|water leak|overflow/.test(text)) {
-    return { category: "Drainage", confidence: 0.79, reason: "Detected water and drainage keywords.", source: "heuristic" };
+    return { category: "Drainage", confidence: 0.79, reason: "Detected water and drainage keywords.", source: "heuristic", priority_score: 5 };
   }
 
   if (/graffiti|vandal|spray paint/.test(text)) {
-    return { category: "Graffiti", confidence: 0.76, reason: "Detected vandalism-related keywords.", source: "heuristic" };
+    return { category: "Graffiti", confidence: 0.76, reason: "Detected vandalism-related keywords.", source: "heuristic", priority_score: 2 };
   }
 
   if (/sidewalk|curb|walkway|pedestrian/.test(text)) {
-    return { category: "Sidewalk", confidence: 0.75, reason: "Detected pedestrian path keywords.", source: "heuristic" };
+    return { category: "Sidewalk", confidence: 0.75, reason: "Detected pedestrian path keywords.", source: "heuristic", priority_score: 3 };
   }
 
   return {
@@ -571,6 +599,7 @@ function suggestFromHeuristics(description: string): CategorySuggestion {
     confidence: 0.6,
     reason: "No strong pattern found; using broad fallback category.",
     source: "heuristic",
+    priority_score: priorityScore(description),
   };
 }
 
@@ -593,6 +622,7 @@ export async function suggestIssueCategory(issue: Pick<Issue, "description" | "a
           confidence: typeof data.confidence === "number" ? data.confidence : 0.7,
           reason: typeof data.reason === "string" ? data.reason : "AI function classified this issue.",
           source: "edge-function",
+          priority_score: typeof data.priority_score === "number" ? Math.max(1, Math.min(5, data.priority_score)) : priorityScore(issue.description),
         };
       }
     } catch {

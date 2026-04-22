@@ -312,8 +312,27 @@ export default function IssueDetailsPage() {
         <div className="card card-pad" style={{ border: "1px solid #c7d2fe", background: "#eef2ff" }}>
           <div className="h2" style={{ marginBottom: 8 }}>AI Category Suggestion</div>
           <div style={{ display: "grid", gap: 8 }}>
-            <div>
-              Suggested: <b>{categorySuggestion.category}</b>
+            <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
+              <div>
+                Suggested: <b>{categorySuggestion.category}</b>
+              </div>
+              <div
+                style={{
+                  padding: "4px 12px",
+                  borderRadius: 4,
+                  fontSize: 12,
+                  fontWeight: 800,
+                  background:
+                    categorySuggestion.priority_score >= 5 ? "#dc2626" :
+                    categorySuggestion.priority_score >= 4 ? "#ea580c" :
+                    categorySuggestion.priority_score >= 3 ? "#f59e0b" :
+                    categorySuggestion.priority_score >= 2 ? "#3b82f6" :
+                    "#6b7280",
+                  color: "#fff",
+                }}
+              >
+                P{categorySuggestion.priority_score} {["Critical", "High", "Med", "Low", "Info"][categorySuggestion.priority_score - 1] || "Unknown"}
+              </div>
             </div>
             <div className="muted" style={{ fontSize: 13 }}>
               Confidence: {Math.round(categorySuggestion.confidence * 100)}% • Source: {categorySuggestion.source}
