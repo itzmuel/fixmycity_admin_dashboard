@@ -79,7 +79,6 @@ export default function DashboardPage() {
     setIssues(data);
   }, []);
 
-  // Load issues
   useEffect(() => {
     let alive = true;
 
@@ -167,7 +166,6 @@ export default function DashboardPage() {
     };
   }, [refreshIssues]);
 
-  // Close modal on ESC + lock scroll while open
   useEffect(() => {
     if (!previewImage) return;
 
@@ -201,9 +199,8 @@ export default function DashboardPage() {
   }, [issues]);
 
   const filteredIssues = useMemo(() => {
-    // Use advanced filters if any, otherwise use basic filters
     const baseIssues = filteredIssuesFromAdvanced.length > 0 ? filteredIssuesFromAdvanced : issues;
-    
+
     const q = normalize(query);
 
     return baseIssues.filter((i) => {
@@ -236,95 +233,164 @@ export default function DashboardPage() {
   const pageEnd = filteredIssues.length === 0 ? 0 : Math.min(page * PAGE_SIZE, filteredIssues.length);
 
   return (
-    <div style={{ display: "grid", gap: 12 }}>
+    <div className="grid gap-3">
       {/* Header with Notifications */}
-      <div className="card card-pad" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
+      <div
+        className="flex justify-between items-center flex-wrap gap-3 rounded-[20px] bg-white p-5 relative overflow-hidden"
+        style={{ border: "1px solid var(--color-border-light)", boxShadow: "var(--shadow-card-soft)" }}
+      >
         <div>
-          <div className="h1">City Reports Dashboard</div>
-          <div className="muted" style={{ marginTop: 6 }}>
+          <div>
+            <h1 className="text-[22px] text-[var(--color-text-main)] m-0" style={{ fontFamily: "var(--font-heading)" }}>
+              City Reports Dashboard
+            </h1>
+          </div>
+          <p className="text-sm font-semibold text-[var(--color-text-secondary)] mt-2">
             Review active reports, manage operations, and open issue details.
-          </div>
-          <div style={{ marginTop: 8, fontSize: 12, fontWeight: 800, color: liveSyncConnected ? "#166534" : "#92400e" }}>
+          </p>
+          <span
+            className="inline-flex items-center gap-1.5 mt-2 text-xs rounded-full px-3 py-1"
+            style={{
+              color: liveSyncConnected ? "#166534" : "#92400e",
+              background: liveSyncConnected ? "#dcfce7" : "#fef3c7",
+            }}
+          >
+            <span
+              className="w-2 h-2 rounded-full inline-block"
+              style={{ background: liveSyncConnected ? "#16a34a" : "#d97706" }}
+            />
             {liveSyncConnected ? "Live sync connected" : "Live sync unavailable"}
-          </div>
+          </span>
         </div>
         <NotificationsPanel issues={issues} realtimeNotifications={realtimeNotifications} />
       </div>
 
       {duplicateAlert && (
         <div
-          className="card card-pad"
-          style={{ border: "1px solid #f59e0b", background: "#fffbeb", color: "#92400e", fontWeight: 800, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12 }}
+          className="flex justify-between items-center gap-3 rounded-[20px] p-5 font-extrabold text-sm"
+          style={{
+            border: "1px solid #f59e0b",
+            background: "#fffbeb",
+            color: "#92400e",
+          }}
         >
           <span>{duplicateAlert}</span>
-          <button type="button" className="btn" onClick={() => setDuplicateAlert(null)}>
+          <button
+            type="button"
+            onClick={() => setDuplicateAlert(null)}
+            className="rounded-full px-4 py-2 text-xs font-extrabold cursor-pointer transition-all duration-200 hover:opacity-80"
+            style={{
+              background: "var(--color-primary)",
+              color: "#fff",
+              border: "none",
+            }}
+          >
             Dismiss
           </button>
         </div>
       )}
 
-      {/* Map View - GAME CHANGER */}
+      {/* Map View */}
       <MapView issues={issues} onIssueClick={(issue) => navigate(`/issues/${issue.id}`)} />
 
       {/* Filters + Search + Download */}
-      <div className="card card-pad" style={{ display: "grid", gap: 12 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-          <div style={{ fontSize: 12, color: "#999" }}>
+      <div
+        className="grid gap-3 rounded-[20px] bg-white p-5"
+        style={{ border: "1px solid var(--color-border-light)", boxShadow: "var(--shadow-card-soft)" }}
+      >
+        <div className="flex justify-between items-center gap-3 flex-wrap">
+          <div className="text-xs font-medium text-[var(--color-text-muted)]" style={{ fontFamily: "var(--font-heading)" }}>
             {filteredIssues.length} issues found
           </div>
 
-          <div style={{ marginLeft: "auto", display: "flex", gap: 10, alignItems: "center" }}>
+          <div className="ml-auto flex gap-2.5 items-center">
             <AdvancedFilters issues={issues} onFilter={setFilteredIssuesFromAdvanced} />
             <ExportButton issues={filteredIssues} />
           </div>
         </div>
 
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-          <button type="button" className={`pill ${filter === "all" ? "pill-active" : ""}`} onClick={() => setFilter("all")}>
+        <div className="flex gap-2 flex-wrap">
+          <button
+            type="button"
+            onClick={() => setFilter("all")}
+            className="rounded-full px-4 py-2 text-sm font-extrabold cursor-pointer transition-all duration-200 border border-[var(--color-border-light)]"
+            style={{
+              background: filter === "all" ? "var(--color-primary)" : "#fff",
+              color: filter === "all" ? "#fff" : "var(--color-text-secondary)",
+            }}
+          >
             All ({counts.all})
           </button>
-
-          <button type="button" className={`pill ${filter === "submitted" ? "pill-active" : ""}`} onClick={() => setFilter("submitted")}>
+          <button
+            type="button"
+            onClick={() => setFilter("submitted")}
+            className="rounded-full px-4 py-2 text-sm font-extrabold cursor-pointer transition-all duration-200 border border-[var(--color-border-light)]"
+            style={{
+              background: filter === "submitted" ? "var(--color-primary)" : "#fff",
+              color: filter === "submitted" ? "#fff" : "var(--color-text-secondary)",
+            }}
+          >
             Submitted ({counts.submitted})
           </button>
-
-          <button type="button" className={`pill ${filter === "in_progress" ? "pill-active" : ""}`} onClick={() => setFilter("in_progress")}>
+          <button
+            type="button"
+            onClick={() => setFilter("in_progress")}
+            className="rounded-full px-4 py-2 text-sm font-extrabold cursor-pointer transition-all duration-200 border border-[var(--color-border-light)]"
+            style={{
+              background: filter === "in_progress" ? "var(--color-primary)" : "#fff",
+              color: filter === "in_progress" ? "#fff" : "var(--color-text-secondary)",
+            }}
+          >
             In Progress ({counts.inProgress})
           </button>
-
-          <button type="button" className={`pill ${filter === "resolved" ? "pill-active" : ""}`} onClick={() => setFilter("resolved")}>
+          <button
+            type="button"
+            onClick={() => setFilter("resolved")}
+            className="rounded-full px-4 py-2 text-sm font-extrabold cursor-pointer transition-all duration-200 border border-[var(--color-border-light)]"
+            style={{
+              background: filter === "resolved" ? "var(--color-primary)" : "#fff",
+              color: filter === "resolved" ? "#fff" : "var(--color-text-secondary)",
+            }}
+          >
             Resolved ({counts.resolved})
           </button>
         </div>
 
-        <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
+        <div className="flex gap-2.5 items-center flex-wrap">
           <input
-            className="input"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search by ID, category, address, or description..."
+            className="w-full max-w-[520px] px-3 py-2.5 rounded-2xl border border-[var(--color-border-light)] outline-none bg-white font-bold text-sm text-[var(--color-text-main)] placeholder:text-[var(--color-text-muted)]"
           />
 
           {query.trim().length > 0 && (
-            <button type="button" className="btn" onClick={() => setQuery("")}>
+            <button
+              type="button"
+              onClick={() => setQuery("")}
+              className="rounded-full px-4 py-2 text-xs font-extrabold cursor-pointer transition-all duration-200 bg-white border border-[var(--color-border-light)] text-[var(--color-text-secondary)] hover:bg-[var(--color-primary-light)]"
+            >
               Clear
             </button>
           )}
         </div>
 
-        <div className="muted">
+        <div className="text-sm font-semibold text-[var(--color-text-secondary)]">
           {loading ? "Loading..." : `Showing ${pageStart}-${pageEnd} of ${filteredIssues.length} filtered reports (${issues.length} total)`}
         </div>
 
         {error && (
-          <div style={{ padding: 10, borderRadius: 12, border: "1px solid #ef4444", color: "#ef4444", fontWeight: 700 }}>
+          <div className="p-3 rounded-xl border border-red-400 text-red-500 font-bold text-sm">
             {error}
           </div>
         )}
       </div>
 
       {/* Issues Table */}
-      <div className="card" style={{ overflow: "hidden" }}>
+      <div
+        className="overflow-hidden rounded-[20px] bg-white"
+        style={{ border: "1px solid var(--color-border-light)", boxShadow: "var(--shadow-card-soft)" }}
+      >
         <table className="table">
           <thead>
             <tr>
@@ -357,7 +423,6 @@ export default function DashboardPage() {
                     }
                   }}
                 >
-                  {/* PHOTO COLUMN */}
                   <td className="td">
                     {photo ? (
                       <img
@@ -367,22 +432,14 @@ export default function DashboardPage() {
                           e.stopPropagation();
                           setPreviewImage(photo);
                         }}
-                        style={{
-                          width: 50,
-                          height: 50,
-                          objectFit: "cover",
-                          borderRadius: 12,
-                          cursor: "pointer",
-                          border: "1px solid #e5e7eb",
-                          display: "block",
-                        }}
+                        className="w-[50px] h-[50px] object-cover rounded-xl cursor-pointer block border border-[var(--color-border-light)]"
                       />
                     ) : (
-                      <span style={{ color: "#9ca3af", fontWeight: 700 }}>—</span>
+                      <span className="text-[var(--color-text-muted)] font-bold">—</span>
                     )}
                   </td>
 
-                  <td className="td" style={{ fontWeight: 900 }}>
+                  <td className="td text-[var(--color-text-main)]" style={{ fontFamily: "var(--font-heading)", fontSize: 12 }}>
                     {issue.id}
                   </td>
 
@@ -403,16 +460,8 @@ export default function DashboardPage() {
                       const sla = formatSlaState(issue);
                       return (
                         <span
-                          style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            padding: "4px 10px",
-                            borderRadius: 999,
-                            fontSize: 12,
-                            fontWeight: 900,
-                            color: sla.color,
-                            background: sla.background,
-                          }}
+                          className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-extrabold"
+                          style={{ color: sla.color, background: sla.background, fontFamily: "var(--font-heading)" }}
                         >
                           {sla.label}
                         </span>
@@ -420,24 +469,24 @@ export default function DashboardPage() {
                     })()}
                   </td>
 
-                  <td className="td" style={{ fontWeight: 800 }}>
+                  <td className="td" style={{ fontFamily: "var(--font-heading)" }}>
                     {duplicateCounts.get(issue.id) && (duplicateCounts.get(issue.id) as number) > 0 ? (
-                      <span style={{ color: "#b45309" }}>
+                      <span className="text-amber-700">
                         {duplicateCounts.get(issue.id)} nearby
                       </span>
                     ) : (
-                      <span style={{ color: "#166534" }}>Low</span>
+                      <span className="text-emerald-700">Low</span>
                     )}
                   </td>
 
-                  <td className="td">{issue.address ?? "—"}</td>
+                  <td className="td text-[var(--color-text-secondary)]">{issue.address ?? "—"}</td>
                 </tr>
               );
             })}
 
             {!loading && filteredIssues.length === 0 && (
               <tr>
-                <td className="td muted" colSpan={8} style={{ padding: 16 }}>
+                <td className="td text-[var(--color-text-muted)] font-semibold" colSpan={8} style={{ padding: 16 }}>
                   No reports match your filters/search.
                 </td>
               </tr>
@@ -447,21 +496,29 @@ export default function DashboardPage() {
       </div>
 
       {!loading && filteredIssues.length > 0 && (
-        <div className="card card-pad" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-          <div className="muted">
+        <div
+          className="flex justify-between items-center gap-3 flex-wrap rounded-[20px] bg-white p-5"
+          style={{ border: "1px solid var(--color-border-light)", boxShadow: "var(--shadow-card-soft)" }}
+        >
+          <div className="text-sm font-semibold text-[var(--color-text-secondary)]">
             Page {page} of {totalPages}
           </div>
 
-          <div style={{ display: "flex", gap: 8 }}>
-            <button type="button" className="btn" disabled={page === 1} onClick={() => setPage((current) => Math.max(1, current - 1))}>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              disabled={page === 1}
+              onClick={() => setPage((current) => Math.max(1, current - 1))}
+              className="rounded-full px-5 py-2.5 text-sm font-extrabold cursor-pointer transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed border border-[var(--color-border-light)] bg-white text-[var(--color-text-secondary)] hover:bg-[var(--color-primary-light)]"
+            >
               Previous
             </button>
 
             <button
               type="button"
-              className="btn"
               disabled={page === totalPages}
               onClick={() => setPage((current) => Math.min(totalPages, current + 1))}
+              className="rounded-full px-5 py-2.5 text-sm font-extrabold cursor-pointer transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed border border-[var(--color-border-light)] bg-white text-[var(--color-text-secondary)] hover:bg-[var(--color-primary-light)]"
             >
               Next
             </button>
@@ -473,32 +530,21 @@ export default function DashboardPage() {
       {previewImage && (
         <div
           onClick={() => setPreviewImage(null)}
-          style={{
-            position: "fixed",
-            inset: 0,
-            background: "rgba(0,0,0,0.6)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 999,
-            padding: 20,
-          }}
+          className="fixed inset-0 flex items-center justify-center p-5 z-[999]"
+          style={{ background: "rgba(0,0,0,0.5)" }}
         >
           <div
-            className="card"
-            style={{
-              borderRadius: 16,
-              padding: 16,
-              maxWidth: 900,
-              width: "100%",
-              maxHeight: "90vh",
-              overflow: "auto",
-            }}
             onClick={(e) => e.stopPropagation()}
+            className="rounded-[20px] p-5 bg-white max-w-[900px] w-full max-h-[90vh] overflow-auto"
+            style={{ border: "1px solid var(--color-border-light)", boxShadow: "var(--shadow-float)" }}
           >
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
-              <div style={{ fontWeight: 900 }}>Photo Preview</div>
-              <button type="button" className="btn" onClick={() => setPreviewImage(null)}>
+            <div className="flex justify-between items-center mb-3">
+              <div className="font-medium text-lg text-[var(--color-text-main)]" style={{ fontFamily: "var(--font-heading)" }}>Photo Preview</div>
+              <button
+                type="button"
+                onClick={() => setPreviewImage(null)}
+                className="rounded-full px-4 py-2 text-xs font-extrabold cursor-pointer transition-all duration-200 border border-[var(--color-border-light)] bg-white text-[var(--color-text-secondary)] hover:bg-[var(--color-primary-light)]"
+              >
                 Close
               </button>
             </div>
@@ -506,15 +552,10 @@ export default function DashboardPage() {
             <img
               src={previewImage}
               alt="Full Preview"
-              style={{
-                maxWidth: "100%",
-                borderRadius: 12,
-                border: "1px solid #e5e7eb",
-                display: "block",
-              }}
+              className="max-w-full rounded-xl border border-[var(--color-border-light)] block"
             />
 
-            <div className="muted" style={{ marginTop: 10, fontSize: 12 }}>
+            <div className="mt-2.5 text-xs font-bold text-[var(--color-text-muted)]">
               Tip: Press <b>Esc</b> to close.
             </div>
           </div>

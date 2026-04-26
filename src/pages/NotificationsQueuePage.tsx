@@ -116,7 +116,7 @@ export default function NotificationsQueuePage() {
       <div className="card card-pad" style={{ display: "grid", gap: 8 }}>
         <div className="h1">Notification Queue</div>
         <div className="muted">Monitor pending, sent, and failed delivery events for status emails/push.</div>
-        <div style={{ fontSize: 12, fontWeight: 800, color: liveSyncConnected ? "#166534" : "#92400e" }}>
+        <div style={{ fontSize: 12, fontFamily: "var(--font-heading)", color: liveSyncConnected ? "#166534" : "#92400e" }}>
           {liveSyncConnected ? "Live queue sync connected" : "Live queue sync unavailable"}
         </div>
       </div>
@@ -177,7 +177,7 @@ export default function NotificationsQueuePage() {
                 const badge = statusBadgeStyles(event.status);
                 return (
                   <tr key={event.id}>
-                    <td className="td" style={{ fontWeight: 800 }}>{event.id}</td>
+                    <td className="td" style={{ fontFamily: "var(--font-heading)" }}>{event.id}</td>
                     <td className="td">{event.issueId}</td>
                     <td className="td">{event.eventType}</td>
                     <td className="td">
@@ -188,7 +188,7 @@ export default function NotificationsQueuePage() {
                           borderRadius: 999,
                           padding: "4px 10px",
                           fontSize: 12,
-                          fontWeight: 900,
+                          fontFamily: "var(--font-heading)",
                           color: badge.color,
                           background: badge.background,
                         }}

@@ -2,6 +2,7 @@ import { Suspense, lazy, useEffect, useMemo, useState } from "react";
 import type { Issue } from "../models/issue";
 import { getIssues } from "../services/issueService";
 import NotificationsPanel from "../components/NotificationsPanel";
+import { theme } from "../theme";
 
 const AnalyticsCards = lazy(() => import("../components/AnalyticsCards"));
 const ChartsPanel = lazy(() => import("../components/ChartsPanel"));
@@ -88,22 +89,34 @@ export default function AnalyticsPage() {
       </div>
 
       {error && (
-        <div className="card card-pad" style={{ border: "1px solid #ef4444", color: "#ef4444", fontWeight: 700 }}>
+        <div className="rounded-xl p-3 border border-red-400 text-red-500 text-sm" style={{ fontFamily: "var(--font-heading)" }}>
           {error}
         </div>
       )}
 
-      <div className="card card-pad" style={{ display: "grid", gap: 10 }}>
+      <div
+        className="card card-pad"
+        style={{ display: "grid", gap: 10, background: theme.colors.primaryLight, border: "none" }}
+      >
         <div className="h2">Snapshot</div>
         <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
-          <div className="muted">
-            Total reports: <strong style={{ color: "#111827" }}>{analyticsSummary.total}</strong>
+          <div
+            className="text-sm"
+            style={{ color: theme.colors.textSecondary, fontFamily: "var(--font-heading)" }}
+          >
+            Total reports: <strong style={{ color: theme.colors.text }}>{analyticsSummary.total}</strong>
           </div>
-          <div className="muted">
-            Most common type: <strong style={{ color: "#111827" }}>{analyticsSummary.mostCommonIssueType}</strong>
+          <div
+            className="text-sm"
+            style={{ color: theme.colors.textSecondary, fontFamily: "var(--font-heading)" }}
+          >
+            Most common type: <strong style={{ color: theme.colors.text }}>{analyticsSummary.mostCommonIssueType}</strong>
           </div>
-          <div className="muted">
-            Resolution rate: <strong style={{ color: "#111827" }}>{analyticsSummary.resolutionRate}%</strong>
+          <div
+            className="text-sm"
+            style={{ color: theme.colors.textSecondary, fontFamily: "var(--font-heading)" }}
+          >
+            Resolution rate: <strong style={{ color: theme.colors.text }}>{analyticsSummary.resolutionRate}%</strong>
           </div>
         </div>
       </div>

@@ -1,25 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Outlet, NavLink, useNavigate } from "react-router-dom";
 import { supabase } from "../services/supabaseClient";
 import { theme } from "../theme";
-
-function linkStyle(active: boolean) {
-  return {
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 10,
-    padding: "10px 12px",
-    borderRadius: 14,
-    textDecoration: "none",
-    fontWeight: 900,
-    border: `1px solid ${active ? theme.colors.primary : theme.colors.border}`,
-    color: active ? "#fff" : theme.colors.text,
-    background: active ? theme.colors.primary : "#F3F4F6",
-    boxShadow: active ? "0 10px 20px rgba(37, 99, 235, 0.18)" : "none",
-    transition: "background 160ms ease, color 160ms ease, border-color 160ms ease, box-shadow 160ms ease",
-  } as const;
-}
+import { LogOut, LayoutDashboard, BarChart3, Bell, UserCheck, Lightbulb, Smile } from "lucide-react";
+import logoSvg from "../assets/logo.svg";
 
 function getGreeting(hour: number) {
   if (hour < 12) return "Good morning";
@@ -67,8 +51,6 @@ export default function AppShell() {
     };
   }, []);
 
-  const greeting = useMemo(() => `${getGreeting(new Date().getHours())}, ${displayName}`, [displayName]);
-
   async function handleLogout() {
     setLoggingOut(true);
 
@@ -95,58 +77,99 @@ export default function AppShell() {
       >
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <img
-            src="/fixmycity-web-icon.png"
+            src={logoSvg}
             alt="FixMyCity logo"
             style={{
               width: 44,
               height: 44,
-              borderRadius: 999,
-              objectFit: "cover",
-              border: `1px solid ${theme.colors.border}`,
+              objectFit: "contain",
             }}
           />
 
           <div>
-            <div style={{ fontWeight: 900, fontSize: 16 }}>FixMyCity</div>
-            <div style={{ color: theme.colors.muted, fontWeight: 700, fontSize: 12 }}>City Admin</div>
+            <div style={{ fontFamily: "var(--font-heading)", fontSize: 16, color: theme.colors.text }}>FixMyCity</div>
+            <div style={{ color: theme.colors.muted, fontFamily: "var(--font-heading)", fontSize: 12 }}>City Admin</div>
           </div>
         </div>
 
         <nav style={{ marginTop: 16, display: "grid", gap: 8 }}>
-          <div className="card card-pad" style={{ background: "#F9FAFB" }}>
-            <div style={{ fontWeight: 900, fontSize: 14 }}>{greeting}</div>
+          <div
+            className="card card-pad"
+            style={{ background: theme.colors.primaryLight }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 6, fontFamily: "var(--font-heading)", fontSize: 14, color: theme.colors.text }}>
+              <Smile size={16} color={theme.colors.primary} />
+              {`${getGreeting(new Date().getHours())},`}
+            </div>
+            <div style={{ fontFamily: "var(--font-heading)", fontSize: 14, color: theme.colors.text, paddingLeft: 22 }}>
+              {displayName}
+            </div>
           </div>
 
-          <NavLink to="/dashboard" style={({ isActive }) => linkStyle(isActive)}>
+          <NavLink to="/dashboard" className={({ isActive }) => `nav-link${isActive ? " nav-link-active" : ""}`}>
+            <LayoutDashboard size={18} />
             Dashboard
           </NavLink>
 
-          <NavLink to="/analytics" style={({ isActive }) => linkStyle(isActive)}>
+          <NavLink to="/analytics" className={({ isActive }) => `nav-link${isActive ? " nav-link-active" : ""}`}>
+            <BarChart3 size={18} />
             Analytics
           </NavLink>
 
-          <NavLink to="/notifications" style={({ isActive }) => linkStyle(isActive)}>
-            Notifications Queue
+          <NavLink to="/notifications" className={({ isActive }) => `nav-link${isActive ? " nav-link-active" : ""}`}>
+            <Bell size={18} />
+            Notifications
           </NavLink>
 
-          <NavLink to="/assign" style={({ isActive }) => linkStyle(isActive)}>
+          <NavLink to="/assign" className={({ isActive }) => `nav-link${isActive ? " nav-link-active" : ""}`}>
+            <UserCheck size={18} />
             Assign
           </NavLink>
         </nav>
 
-        <div style={{ marginTop: 16 }} className="card card-pad">
-          <div style={{ fontWeight: 900 }}>Tip</div>
-          <div className="muted" style={{ marginTop: 6, fontSize: 13 }}>
-            Click a report to view details and update its status.
+        <div style={{ marginTop: 16, display: "grid", gap: 8 }}>
+          <div
+            className="card card-pad"
+            style={{ background: theme.colors.primaryLight, border: "none" }}
+          >
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <Lightbulb size={16} color={theme.colors.primary} />
+              <span style={{ fontFamily: "var(--font-heading)", fontSize: 14, color: theme.colors.text }}>Tip</span>
+            </div>
+            <div style={{ marginTop: 6, fontSize: 13, color: theme.colors.textSecondary, fontWeight: 600 }}>
+              Click a report to view details and update its status.
+            </div>
           </div>
         </div>
 
-        <button type="button" className="btn btn-danger" style={{ marginTop: "auto", width: "100%" }} disabled={loggingOut} onClick={handleLogout}>
+        <div style={{ flex: 1 }} />
+
+        <button
+          type="button"
+          disabled={loggingOut}
+          onClick={handleLogout}
+          style={{
+            width: "100%",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 8,
+            padding: "10px 12px",
+            borderRadius: 999,
+            fontFamily: "var(--font-heading)",
+            fontSize: 14,
+            cursor: "pointer",
+            opacity: loggingOut ? 0.5 : 1,
+            transition: "all 0.2s ease",
+          }}
+          className="btn-logout"
+        >
+          <LogOut size={18} />
           {loggingOut ? "Logging out..." : "Log Out"}
         </button>
       </aside>
 
-      <main style={{ padding: 16 }}>
+      <main style={{ padding: 24 }}>
         <div className="container">
           <Outlet />
         </div>

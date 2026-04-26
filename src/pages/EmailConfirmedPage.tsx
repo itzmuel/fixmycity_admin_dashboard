@@ -58,7 +58,7 @@ export default function EmailConfirmedPage() {
           </svg>
         </div>
 
-        <h1 style={{ fontSize: '1.5rem', fontWeight: 800, marginBottom: '0.5rem', color: '#111' }}>
+        <h1 style={{ fontSize: '1.5rem', fontFamily: "var(--font-heading)", marginBottom: '0.5rem', color: '#111' }}>
           Email Confirmed!
         </h1>
         <p style={{ color: '#6b7280', marginBottom: '0.5rem', lineHeight: 1.6 }}>

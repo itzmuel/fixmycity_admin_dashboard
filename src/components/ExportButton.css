@@ -8,20 +8,20 @@
   align-items: center;
   gap: 0.5rem;
   background: white;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
+  border: 1px solid var(--color-border-light);
+  border-radius: 999px;
   padding: 0.6rem 1rem;
   cursor: pointer;
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 0.88rem;
   transition: all 0.2s ease;
-  color: #424242;
-  font-size: 0.9rem;
+  color: var(--color-text-secondary);
 }
 
 .export-btn:hover {
-  background-color: #4caf50;
-  border-color: #4caf50;
-  color: white;
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #ffffff;
 }
 
 .export-menu {
@@ -30,26 +30,28 @@
   top: calc(100% + 8px);
   min-width: 180px;
   background: white;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14);
+  border: 1px solid var(--color-border-light);
+  border-radius: 16px;
+  box-shadow: var(--shadow-float);
   z-index: 1000;
-  padding: 0.35rem;
+  padding: 0.4rem;
 }
 
 .export-menu-item {
   width: 100%;
   text-align: left;
-  padding: 0.55rem 0.7rem;
+  padding: 0.6rem 0.85rem;
   border: none;
   background: transparent;
-  border-radius: 6px;
+  border-radius: 12px;
   cursor: pointer;
-  color: #374151;
-  font-size: 0.88rem;
-  font-weight: 600;
+  color: var(--color-text-main);
+  font-size: 0.85rem;
+  font-weight: 700;
+  transition: all 0.15s ease;
 }
 
 .export-menu-item:hover {
-  background: #f3f4f6;
+  background: var(--color-primary-light);
+  color: var(--color-primary);
 }

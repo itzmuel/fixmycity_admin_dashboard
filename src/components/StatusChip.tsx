@@ -7,9 +7,9 @@ function getStyle(status: IssueStatus) {
     case "submitted":
       return {
         label: "Submitted",
-        bg: "#FFF3C7",
-        fg: "#8A5A00",
-        border: "#FFF3C7",
+        bg: "var(--color-primary-light)",
+        fg: "var(--color-primary)",
+        border: "var(--color-primary-light)",
       };
     case "in_progress":
       return {
@@ -39,7 +39,7 @@ export default function StatusChip({ status }: Props) {
         justifyContent: "center",
         padding: "6px 10px",
         borderRadius: 999,
-        fontWeight: 900,
+        fontFamily: "var(--font-heading)",
         fontSize: 12,
         background: s.bg,
         color: s.fg,

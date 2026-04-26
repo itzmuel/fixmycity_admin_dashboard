@@ -1,19 +1,24 @@
 export const theme = {
   colors: {
-    primary: "#2563EB", // close to your Flutter primary
-    bg: "#F5F7FB",
+    primary: "#7776AB",
+    primaryHover: "#646395",
+    primaryLight: "#E7E1F5",
+    bg: "#F8F6FB",
     card: "#FFFFFF",
-    text: "#111827",
-    muted: "#6B7280",
-    border: "#E5E7EB",
+    text: "#1A1A1A",
+    textSecondary: "#6E7185",
+    muted: "#A1A3B1",
+    border: "#E7E1F1",
+    borderDivider: "#EEE8F5",
     danger: "#DC2626",
   },
   radius: {
-    card: 16,
+    card: 20,
     pill: 999,
     input: 14,
   },
   shadow: {
-    card: "0 8px 20px rgba(17, 24, 39, 0.06)",
+    card: "0 8px 30px rgba(120, 100, 160, 0.08)",
+    float: "0 12px 40px rgba(120, 100, 170, 0.08)",
   },
 };
