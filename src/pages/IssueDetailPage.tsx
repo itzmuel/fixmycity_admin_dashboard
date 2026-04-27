@@ -16,7 +16,7 @@ import { theme } from "../theme";
 import StatusChip from "../components/StatusChip";
 import CategoryBadge from "../components/CategoryBadge";
 import PriorityBadge from "../components/PriorityBadge";
-import { MapPin, AlertCircle, CheckCircle } from "lucide-react";
+import { MapPin, AlertCircle, CheckCircle, Clock, Wrench } from "lucide-react";
 
 
 
@@ -275,7 +275,7 @@ export default function IssueDetailsPage() {
         <div>
           <div className="h1">Issue Details</div>
           <div style={{ marginTop: 8, display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
-            <span className="muted" style={{ fontWeight: 900 }}>#{issue.id}</span>
+            <span className="muted" style={{ fontFamily: "var(--font-heading)" }}>#{issue.id}</span>
             <StatusChip status={issue.status} />
             {issue.priority && <PriorityBadge priority={issue.priority} />}
             <span
@@ -286,13 +286,14 @@ export default function IssueDetailsPage() {
                 borderRadius: 999,
                 fontSize: 12,
                 fontWeight: 900,
+                fontFamily: "var(--font-heading)",
                 color: sla.color,
                 background: sla.background,
               }}
             >
               {sla.label}
             </span>
-            <span style={{ fontSize: 12, fontWeight: 800, color: liveSyncConnected ? "#166534" : "#92400e" }}>
+            <span style={{ fontSize: 12, fontFamily: "var(--font-heading)", color: liveSyncConnected ? "#166534" : "#92400e" }}>
               {liveSyncConnected ? "Live sync active" : "Live sync unavailable"}
             </span>
           </div>
@@ -321,7 +322,7 @@ export default function IssueDetailsPage() {
                   padding: "4px 12px",
                   borderRadius: 4,
                   fontSize: 12,
-                  fontWeight: 800,
+                  fontFamily: "var(--font-heading)",
                   background:
                     categorySuggestion.priority_score >= 5 ? "#dc2626" :
                     categorySuggestion.priority_score >= 4 ? "#ea580c" :
@@ -362,12 +363,12 @@ export default function IssueDetailsPage() {
       {/* Metadata Cards */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 12 }}>
         <div className="card card-pad" style={{ borderLeft: "4px solid #2196f3" }}>
-          <div style={{ fontSize: 12, color: "#999", marginBottom: 6 }}>CATEGORY</div>
+          <div style={{ fontSize: 12, fontFamily: "var(--font-heading)", color: "var(--color-text-secondary)", marginBottom: 6 }}>CATEGORY</div>
           <CategoryBadge category={issue.category} />
         </div>
 
         <div className="card card-pad" style={{ borderLeft: "4px solid #ff9800" }}>
-          <div style={{ fontSize: 12, color: "#999", marginBottom: 6 }}>SUBMITTED</div>
+          <div style={{ fontSize: 12, fontFamily: "var(--font-heading)", color: "var(--color-text-secondary)", marginBottom: 6 }}>SUBMITTED</div>
           <div style={{ fontWeight: 600, fontSize: 14 }}>
             {new Date(issue.createdAt).toLocaleDateString()}
           </div>
@@ -377,7 +378,7 @@ export default function IssueDetailsPage() {
         </div>
 
         <div className="card card-pad" style={{ borderLeft: "4px solid #4caf50" }}>
-          <div style={{ fontSize: 12, color: "#999", marginBottom: 6 }}>LOCATION</div>
+          <div style={{ fontSize: 12, fontFamily: "var(--font-heading)", color: "var(--color-text-secondary)", marginBottom: 6 }}>LOCATION</div>
           <div style={{ fontWeight: 600, fontSize: 14, display: "flex", gap: 6, alignItems: "flex-start" }}>
             <MapPin size={18} style={{ marginTop: 2 }} />
             <span>{issue.address || issue.latitude ? `${issue.latitude?.toFixed(4)}, ${issue.longitude?.toFixed(4)}` : "Unknown"}</span>
@@ -403,19 +404,19 @@ export default function IssueDetailsPage() {
         )}
 
         <div style={{ display: "grid", gap: 10 }}>
-          <div><b>ID:</b> {issue.id}</div>
+          <div><b style={{ fontFamily: "var(--font-heading)" }}>ID:</b> {issue.id}</div>
             <div>
-            <b>Category:</b>{" "}
+            <b style={{ fontFamily: "var(--font-heading)" }}>Category:</b>{" "}
             <span style={{ marginLeft: 8 }}>
                 <CategoryBadge category={issue.category} />
             </span>
             </div>
-          <div><b>Description:</b> {issue.description}</div>
-          <div><b>Address:</b> {issue.address ?? "—"}</div>
+          <div><b style={{ fontFamily: "var(--font-heading)" }}>Description:</b> {issue.description}</div>
+          <div><b style={{ fontFamily: "var(--font-heading)" }}>Address:</b> {issue.address ?? "—"}</div>
 
           {photoUrl && (
             <div style={{ display: "grid", gap: 8 }}>
-              <b>Photo:</b>
+              <b style={{ fontFamily: "var(--font-heading)" }}>Photo:</b>
               <a href={photoUrl} target="_blank" rel="noreferrer" style={{ width: "fit-content" }}>
                 <img
                   src={photoUrl}
@@ -431,7 +432,7 @@ export default function IssueDetailsPage() {
 
           {mapEmbedSrc && mapsLink && (
             <div style={{ display: "grid", gap: 8 }}>
-              <b>Map:</b>
+              <b style={{ fontFamily: "var(--font-heading)" }}>Map:</b>
               <div
                 style={{
                   borderRadius: 12,
@@ -533,9 +534,9 @@ export default function IssueDetailsPage() {
         <div className="h2">Timeline</div>
         <div style={{ marginTop: 16, display: "grid", gap: 12 }}>
           <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
-            <div style={{ fontSize: 24 }}>📍</div>
+            <MapPin size={24} color="var(--color-primary)" style={{ flexShrink: 0, marginTop: 2 }} />
             <div>
-              <div style={{ fontWeight: 600 }}>Issue Submitted</div>
+              <div style={{ fontFamily: "var(--font-heading)" }}>Issue Submitted</div>
               <div className="muted" style={{ fontSize: 12 }}>
                 {new Date(issue.createdAt).toLocaleString()}
               </div>
@@ -544,9 +545,9 @@ export default function IssueDetailsPage() {
 
           {issue.status !== "submitted" && (
             <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
-              <div style={{ fontSize: 24 }}>🔧</div>
+              <Wrench size={24} color="var(--color-primary)" style={{ flexShrink: 0, marginTop: 2 }} />
               <div>
-                <div style={{ fontWeight: 600 }}>Work Started</div>
+                <div style={{ fontFamily: "var(--font-heading)" }}>Work Started</div>
                 <div className="muted" style={{ fontSize: 12 }}>
                   {issue.updatedAt
                     ? new Date(issue.updatedAt).toLocaleString()
@@ -558,9 +559,9 @@ export default function IssueDetailsPage() {
 
           {issue.status === "resolved" && (
             <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
-              <div style={{ fontSize: 24 }}>✅</div>
+              <CheckCircle size={24} color="var(--color-primary)" style={{ flexShrink: 0, marginTop: 2 }} />
               <div>
-                <div style={{ fontWeight: 600 }}>Issue Resolved</div>
+                <div style={{ fontFamily: "var(--font-heading)" }}>Issue Resolved</div>
                 <div className="muted" style={{ fontSize: 12 }}>
                   {issue.updatedAt
                     ? new Date(issue.updatedAt).toLocaleString()
@@ -572,9 +573,9 @@ export default function IssueDetailsPage() {
 
           {issue.updatedAt && (
             <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
-              <div style={{ fontSize: 24 }}>🕒</div>
+              <Clock size={24} color="var(--color-primary)" style={{ flexShrink: 0, marginTop: 2 }} />
               <div>
-                <div style={{ fontWeight: 600 }}>Last Updated</div>
+                <div style={{ fontFamily: "var(--font-heading)" }}>Last Updated</div>
                 <div className="muted" style={{ fontSize: 12 }}>
                   {new Date(issue.updatedAt).toLocaleString()}
                 </div>

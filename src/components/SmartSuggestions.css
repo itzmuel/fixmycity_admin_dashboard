@@ -67,7 +67,7 @@
 
 .priority-badge {
   font-size: 0.7rem;
-  font-weight: 700;
+  font-family: var(--font-heading);
   padding: 0.25rem 0.5rem;
   border-radius: 4px;
   background-color: rgba(0, 0, 0, 0.1);

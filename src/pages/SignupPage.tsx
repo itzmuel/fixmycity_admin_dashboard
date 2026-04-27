@@ -78,7 +78,7 @@ export default function SignupPage() {
           </div>
         </div>
 
-        <label style={{ display: "grid", gap: 6, fontWeight: 700 }}>
+        <label style={{ display: "grid", gap: 6, fontFamily: "var(--font-heading)" }}>
           Full Name
           <input
             className="input"
@@ -90,7 +90,7 @@ export default function SignupPage() {
           />
         </label>
 
-        <label style={{ display: "grid", gap: 6, fontWeight: 700 }}>
+        <label style={{ display: "grid", gap: 6, fontFamily: "var(--font-heading)" }}>
           Email
           <input
             className="input"
@@ -102,7 +102,7 @@ export default function SignupPage() {
           />
         </label>
 
-        <label style={{ display: "grid", gap: 6, fontWeight: 700 }}>
+        <label style={{ display: "grid", gap: 6, fontFamily: "var(--font-heading)" }}>
           Password
           <input
             className="input"

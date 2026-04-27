@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Users, Shield } from "lucide-react";
+import { Users, Shield, Check } from "lucide-react";
 import "./AdminRoles.css";
 
 export type AdminRole = "super_admin" | "field_worker" | "viewer";
@@ -107,7 +107,7 @@ export default function AdminRoles({
               <h5>{role.replace(/_/g, " ").toUpperCase()}</h5>
               <ul>
                 {ROLE_PERMISSIONS[role].map((perm) => (
-                  <li key={perm}>✓ {perm}</li>
+                  <li key={perm}><Check size={14} style={{ marginRight: 4 }} />{perm}</li>
                 ))}
               </ul>
             </div>

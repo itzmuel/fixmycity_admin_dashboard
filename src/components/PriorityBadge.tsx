@@ -1,3 +1,4 @@
+import { AlertTriangle, AlertCircle, Info } from "lucide-react";
 import type { IssuePriority } from "../models/issue";
 import "./PriorityBadge.css";
 
@@ -5,19 +6,24 @@ interface PriorityBadgeProps {
   priority: IssuePriority;
 }
 
-export default function PriorityBadge({ priority }: PriorityBadgeProps) {
-  const getLabel = () => {
-    switch (priority) {
-      case "high":
-        return "🔴 High";
-      case "medium":
-        return "🟡 Medium";
-      case "low":
-        return "🟢 Low";
-      default:
-        return priority;
-    }
-  };
+function getPriorityConfig(priority: IssuePriority) {
+  switch (priority) {
+    case "high":
+      return { icon: <AlertTriangle size={14} />, label: "High" };
+    case "medium":
+      return { icon: <AlertCircle size={14} />, label: "Medium" };
+    case "low":
+      return { icon: <Info size={14} />, label: "Low" };
+  }
+}
 
-  return <span className={`priority-badge priority-${priority}`}>{getLabel()}</span>;
+export default function PriorityBadge({ priority }: PriorityBadgeProps) {
+  const config = getPriorityConfig(priority);
+
+  return (
+    <span className={`priority-badge priority-${priority}`}>
+      {config.icon}
+      {config.label}
+    </span>
+  );
 }

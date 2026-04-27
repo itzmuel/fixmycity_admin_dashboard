@@ -72,7 +72,7 @@ export default function LoginPage() {
           </div>
         </div>
 
-        <label style={{ display: "grid", gap: 6, fontWeight: 700 }}>
+        <label style={{ display: "grid", gap: 6, fontFamily: "var(--font-heading)" }}>
           Email
           <input
             className="input"
@@ -84,7 +84,7 @@ export default function LoginPage() {
           />
         </label>
 
-        <label style={{ display: "grid", gap: 6, fontWeight: 700 }}>
+        <label style={{ display: "grid", gap: 6, fontFamily: "var(--font-heading)" }}>
           Password
           <input
             className="input"
