@@ -313,10 +313,11 @@ export default function DashboardPage() {
           <button
             type="button"
             onClick={() => setFilter("all")}
-            className="rounded-full px-4 py-2 text-sm font-extrabold cursor-pointer transition-all duration-200 border border-[var(--color-border-light)]"
+            className="rounded-full px-4 py-2 text-sm cursor-pointer transition-all duration-200 border border-[var(--color-border-light)]"
             style={{
               background: filter === "all" ? "var(--color-primary)" : "#fff",
               color: filter === "all" ? "#fff" : "var(--color-text-secondary)",
+              fontFamily: "var(--font-heading)",
             }}
           >
             All ({counts.all})
@@ -324,10 +325,11 @@ export default function DashboardPage() {
           <button
             type="button"
             onClick={() => setFilter("submitted")}
-            className="rounded-full px-4 py-2 text-sm font-extrabold cursor-pointer transition-all duration-200 border border-[var(--color-border-light)]"
+            className="rounded-full px-4 py-2 text-sm cursor-pointer transition-all duration-200 border border-[var(--color-border-light)]"
             style={{
               background: filter === "submitted" ? "var(--color-primary)" : "#fff",
               color: filter === "submitted" ? "#fff" : "var(--color-text-secondary)",
+              fontFamily: "var(--font-heading)",
             }}
           >
             Submitted ({counts.submitted})
@@ -335,10 +337,11 @@ export default function DashboardPage() {
           <button
             type="button"
             onClick={() => setFilter("in_progress")}
-            className="rounded-full px-4 py-2 text-sm font-extrabold cursor-pointer transition-all duration-200 border border-[var(--color-border-light)]"
+            className="rounded-full px-4 py-2 text-sm cursor-pointer transition-all duration-200 border border-[var(--color-border-light)]"
             style={{
               background: filter === "in_progress" ? "var(--color-primary)" : "#fff",
               color: filter === "in_progress" ? "#fff" : "var(--color-text-secondary)",
+              fontFamily: "var(--font-heading)",
             }}
           >
             In Progress ({counts.inProgress})
@@ -346,10 +349,11 @@ export default function DashboardPage() {
           <button
             type="button"
             onClick={() => setFilter("resolved")}
-            className="rounded-full px-4 py-2 text-sm font-extrabold cursor-pointer transition-all duration-200 border border-[var(--color-border-light)]"
+            className="rounded-full px-4 py-2 text-sm cursor-pointer transition-all duration-200 border border-[var(--color-border-light)]"
             style={{
               background: filter === "resolved" ? "var(--color-primary)" : "#fff",
               color: filter === "resolved" ? "#fff" : "var(--color-text-secondary)",
+              fontFamily: "var(--font-heading)",
             }}
           >
             Resolved ({counts.resolved})

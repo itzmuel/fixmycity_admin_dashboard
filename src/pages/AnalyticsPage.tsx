@@ -126,8 +126,8 @@ export default function AnalyticsPage() {
       ) : (
         <Suspense fallback={<div className="card card-pad">Loading analytics widgets...</div>}>
           <AnalyticsCards issues={issues} timeframe="all" />
-          <ChartsPanel issues={issues} />
           <SmartSuggestions issues={issues} />
+          <ChartsPanel issues={issues} />
         </Suspense>
       )}
     </div>

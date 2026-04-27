@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import landingSvg from "../assets/landing.svg";
 import { isUserAdmin } from "../services/adminAuthService";
 import { hasSupabaseConfig, supabase } from "../services/supabaseClient";
 
@@ -65,11 +66,9 @@ export default function LoginPage() {
   return (
     <div className="auth-shell">
       <form className="card card-pad auth-panel" onSubmit={onSubmit}>
+        <img src={landingSvg} alt="FixMyCity" className=" w-70 mx-auto my-5" />
         <div>
-          <div className="h1">Login</div>
-          <div className="muted" style={{ marginTop: 6 }}>
-            Enter your email and password to sign in.
-          </div>
+          <div className=" font-heading text-center text-gray-400">Login with your account</div>
         </div>
 
         <label style={{ display: "grid", gap: 6, fontFamily: "var(--font-heading)" }}>
@@ -97,13 +96,13 @@ export default function LoginPage() {
           />
         </label>
 
-        <button type="submit" className="btn btn-primary" style={{ width: "100%" }} disabled={signingIn}>
+        <button type="submit" className="btn btn-primary mt-5" style={{ width: "100%" }} disabled={signingIn}>
           {signingIn ? "Signing in..." : "Sign In"}
         </button>
 
         {error && <div className="card card-pad">{error}</div>}
 
-        <div className="muted" style={{ textAlign: "center" }}>
+        <div className="muted my-5" style={{ textAlign: "center" }}>
           Don&apos;t have an account? <Link to="/signup">Create one</Link>
         </div>
       </form>
